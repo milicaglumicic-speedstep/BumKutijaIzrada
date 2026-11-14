@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#e74c3c">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bum Box Proizvodnja & Kalkulator (True-Shape & 1:1 PDF)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 1150px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; margin-top: 0; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; flex-wrap: wrap; }
+        .tab-btn { flex: 1; min-width: 180px; padding: 12px; background: #ecf0f1; border: none; font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 5px; transition: 0.2s; }
+        .tab-btn.active { background: #e74c3c; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .form-group { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; align-items: flex-end; }
+        .form-group > div { flex: 1; min-width: 135px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; color: #2c3e50; }
+        input, select { width: 100%; padding: 9px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+        button.calc-btn { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-bottom: 15px;}
+        button.calc-btn:hover { background: #219150; }
+        
+        .btn-toolbar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .export-btn { padding: 9px 14px; background: #2980b9; color: white; border: none; border-radius: 5px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .export-btn:hover { background: #1f618d; }
+        .export-btn.pdf { background: #c0392b; }
+        .export-btn.pdf:hover { background: #962d22; }
+        .export-btn.all-pdf { background: #8e44ad; width: 100%; padding: 13px; font-size: 15px; margin-bottom: 20px; }
+        .export-btn.all-pdf:hover { background: #732d91; }
+
+        .component { border: 2px solid #ecf0f1; border-radius: 8px; padding: 20px; margin-bottom: 30px; background: #fafafa; }
+        .component-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #3498db; padding-bottom: 8px; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        .component-header h2 { margin: 0; color: #2980b9; font-size: 18px; border: none; padding: 0; }
+        .text-measures { font-family: monospace; background: #fff; padding: 15px; border: 1px dashed #bdc3c7; margin-bottom: 15px; white-space: pre-wrap; font-size: 14px;}
+        .svg-container { text-align: center; background: white; border: 1px solid #eee; padding: 10px; border-radius: 5px; }
+        svg { max-width: 100%; height: auto; max-height: 480px; }
+        
+        .bin-container { border: 2px solid #34495e; margin-bottom: 20px; padding: 15px; background: white; border-radius: 6px; }
+        .bin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
+        .color-section { background: #fdfefe; border: 2px solid #e1e8ed; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .color-section h3 { margin-top: 0; color: #2c3e50; font-size: 16px; margin-bottom: 12px; }
+        .price-tag { color: #e74c3c; font-size: 17px; margin-top: -8px; margin-bottom: 12px; }
+        .summary-banner { color: #27ae60; background: #e8f8f5; padding: 15px; border-radius: 6px; border: 1px solid #a3e4d7; margin-bottom: 20px; }
+        
+        .type-card { background: #f8fbff; border: 2px solid #cbe0f5; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .type-card h4 { margin: 0 0 12px 0; color: #1f618d; font-size: 16px; border-bottom: 1px solid #d6eaf8; padding-bottom: 6px; }
+        .qty-highlight { background: #fff3f3; border: 2px solid #e74c3c !important; padding: 8px; border-radius: 6px; }
+        .qty-highlight label { color: #c0392b; font-size: 13.5px; }
+        .qty-highlight input { border-color: #e74c3c; font-weight: bold; font-size: 16px; text-align: center; background: #fff; }
+        .badge-info { background: #d4efdf; color: #196f3d; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📦 Bum Box Proizvodnja & Kalkulator</h1>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab-sabloni', this)">1. Nacrti i 1:1 PDF Šabloni</button>
+        <button class="tab-btn" onclick="switchTab('tab-materijal', this)">2. Uklapanje Oblika (Jedan tip)</button>
+        <button class="tab-btn" onclick="switchTab('tab-miks', this)">3. Kombinovana Porudžbina</button>
+        <button class="tab-btn" onclick="switchTab('tab-popup', this)">4. Pop-Up Kocke (25x15)</button>
+    </div>
+
+    <!-- ZAJEDNIČKE MERE ZA TAB 1 I TAB 2 -->
+    <div id="shared-inputs" class="form-group" style="background:#f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+        <div>
+            <label>Čep - Širina (cm)</label>
+            <input type="number" id="cepW" value="10.5" step="0.1">
+        </div>
+        <div>
+            <label>Čep - Dužina (cm)</label>
+            <input type="number" id="cepL" value="8.5" step="0.1">
+        </div>
+        <div>
+            <label>Čep - Visina (cm)</label>
+            <input type="number" id="cepH" value="7" step="0.1">
+        </div>
+        <div>
+            <label>Sadržaj kutije</label>
+            <select id="tip" onchange="proveriTipSadrzaja()">
+                <option value="kocke">Samo Kocke</option>
+                <option value="leptiri">Samo Leptiri</option>
+                <option value="oba">Kocke + Leptiri (Oba)</option>
+            </select>
+        </div>
+        <div>
+            <label>Debljina stranice (cm)</label>
+            <input type="number" id="debljina" value="0.2" step="0.1">
+        </div>
+        <div id="leptirW-group" style="display: none;">
+            <label>Leptir - Širina/Dužina (cm)</label>
+            <input type="number" id="leptirW" value="13.5" step="0.1">
+        </div>
+        <div id="leptirH-group" style="display: none;">
+            <label>Leptir - Visina (cm)</label>
+            <input type="number" id="leptirH" value="11" step="0.1">
+        </div>
+    </div>
+
+    <!-- TAB 1: ŠABLONI -->
+    <div id="tab-sabloni" class="tab-content active">
+        <button class="calc-btn" onclick="generisiSablone()">Izračunaj i Iscrtaj Šablone</button>
+        <button class="export-btn all-pdf" onclick="eksportujSveSablonePDF()">📥 Preuzmi SVE šablone u jednom PDF fajlu (Razmera 1:1 u mm za štanc/štampariju)</button>
+        <div id="results-sabloni"></div>
+    </div>
+
+    <!-- TAB 2: MATERIJAL (JEDAN TIP) -->
+    <div id="tab-materijal" class="tab-content">
+        <div class="color-section" style="background:#eef7fa; border-color:#b8daff;">
+            <h3>⚙️ Osnovna podešavanja porudžbine (True-Shape Poligonalno Uklapanje)</h3>
+            <div class="form-group">
+                <div>
+                    <label>1. Izaberi broj boja materijala</label>
+                    <select id="brojBoja" onchange="toggleBoja('brojBoja', 'boja2-sekcija')">
+                        <option value="1">1 Boja (Sve od istog papira)</option>
+                        <option value="2" selected>2 Boje (Kombinovano)</option>
+                    </select>
+                </div>
+                <div class="qty-highlight">
+                    <label>📦 2. BROJ KUTIJA (komada)</label>
+                    <input type="number" id="brojKutija" value="5" min="1">
+                </div>
+            </div>
+        </div>
+
+        <div class="color-section">
+            <h3>🎨 Boja 1 (Uklapanje pravih šablona u prazne uglove krstača)</h3>
+            <div class="form-group">
+                <div>
+                    <label>Naziv boje</label>
+                    <input type="text" id="boja1Ime" value="Zlatna">
+                </div>
+                <div>
+                    <label>Šta se pravi od ove boje?</label>
+                    <select id="boja1Sadrzaj">
+                        <option value="kutija" selected>Kutija komplet (Baza, Poklopac, Okviri)</option>
+                        <option value="cep">Čep komplet (Čep, 4 Kvadrata za strane)</option>
+                        <option value="sve">Sve (Kompletna kutija i čep)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="color-section" id="boja2-sekcija">
+            <h3>🎨 Boja 2 (Uklapanje pravih šablona u prazne uglove krstača)</h3>
+            <div class="form-group">
+                <div>
+                    <label>Naziv boje</label>
+                    <input type="text" id="boja2Ime" value="Bela">
+                </div>
+                <div>
+                    <label>Šta se pravi od ove boje?</label>
+                    <select id="boja2Sadrzaj">
+                        <option value="cep" selected>Čep komplet (Čep, 4 Kvadrata za strane)</option>
+                        <option value="kutija">Kutija komplet (Baza, Poklopac, Okviri)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <button class="calc-btn" onclick="generisiMaterijal()">Izračunaj Poligonalno Uklapanje sa Minimalnim Škartom</button>
+        <div id="results-materijal"></div>
+    </div>
+
+    <!-- TAB 3: KOMBINOVANA PORUDŽBINA -->
+    <div id="tab-miks" class="tab-content">
+        <div class="color-section" style="background:#eef7fa; border-color:#b8daff;">
+            <h3>⚙️ Korak 1: Osnovni parametri materijala i leptira</h3>
+            <div class="form-group" style="margin-bottom:0;">
+                <div>
+                    <label>Broj boja materijala</label>
+                    <select id="brojBojaMiks" onchange="toggleBoja('brojBojaMiks', 'boja2-miks-sekcija')">
+                        <option value="1">1 Boja (Sve od istog papira)</option>
+                        <option value="2" selected>2 Boje (Kombinovano)</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Debljina stranice (cm)</label>
+                    <input type="number" id="debMiks" value="0.2" step="0.1">
+                </div>
+                <div>
+                    <label>Leptir - Širina/Dužina (cm)</label>
+                    <input type="number" id="leptirWMiks" value="13.5" step="0.1">
+                </div>
+                <div>
+                    <label>Leptir - Visina (cm)</label>
+                    <input type="number" id="leptirHMiks" value="11" step="0.1">
+                </div>
+            </div>
+        </div>
+
+        <div class="color-section">
+            <h3>📦 Korak 2: Unesi BROJ KUTIJA i dimenzije čepa za svaki tip kutije</h3>
+
+            <div class="type-card">
+                <h4>1. Tip kutije: SAMO KOCKE</h4>
+                <div class="form-group" style="margin-bottom:0;">
+                    <div class="qty-highlight">
+                        <label>📦 BROJ KUTIJA (Samo Kocke)</label>
+                        <input type="number" id="kolKocke" value="2" min="0">
+                    </div>
+                    <div>
+                        <label>Čep Širina (cm)</label>
+                        <input type="number" id="cepWKocke" value="10.5" step="0.1">
+                    </div>
+                    <div>
+                        <label>Čep Dužina (cm)</label>
+                        <input type="number" id="cepLKocke" value="8.5" step="0.1">
+                    </div>
+                    <div>
+                        <label>Čep Visina (cm)</label>
+                        <input type="number" id="cepHKocke" value="7" step="0.1">
+                    </div>
+                </div>
+            </div>
+
+            <div class="type-card">
+                <h4>2. Tip kutije: SAMO LEPTIRI</h4>
+                <div class="form-group" style="margin-bottom:0;">
+                    <div class="qty-highlight">
+                        <label>📦 BROJ KUTIJA (Samo Leptiri)</label>
+                        <input type="number" id="kolLeptiri" value="2" min="0">
+                    </div>
+                    <div>
+                        <label>Čep Širina (cm)</label>
+                        <input type="number" id="cepWLeptiri" value="9" step="0.1">
+                    </div>
+                    <div>
+                        <label>Čep Dužina (cm)</label>
+                        <input type="number" id="cepLLeptiri" value="9" step="0.1">
+                    </div>
+                    <div>
+                        <label>Čep Visina (cm)</label>
+                        <input type="number" id="cepHLeptiri" value="7" step="0.1">
+                    </div>
+                </div>
+            </div>
+
+            <div class="type-card" style="margin-bottom:0;">
+                <h4>3. Tip kutije: KOCKE + LEPTIRI (Oba)</h4>
+                <div class="form-group" style="margin-bottom:0;">
+                    <div class="qty-highlight">
+                        <label>📦 BROJ KUTIJA (Kocke + Leptiri)</label>
+                        <input type="number" id="kolOba" value="1" min="0">
+                    </div>
+                    <div>
+                        <label>Čep Širina (cm)</label>
+                        <input type="number" id="cepWOba" value="10.5" step="0.1">
+                    </div>
+                    <div>
+                        <label>Čep Dužina (cm)</label>
+                        <input type="number" id="cepLOba" value="8.5" step="0.1">
+                    </div>
+                    <div>
+                        <label>Čep Visina (cm)</label>
+                        <input type="number" id="cepHOba" value="7" step="0.1">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="color-section">
+            <h3>🎨 Korak 3: Boja 1 - Kombinovana porudžbina</h3>
+            <div class="form-group">
+                <div>
+                    <label>Naziv boje</label>
+                    <input type="text" id="boja1ImeMiks" value="Zlatna">
+                </div>
+                <div>
+                    <label>Šta se pravi od ove boje?</label>
+                    <select id="boja1SadrzajMiks">
+                        <option value="kutija" selected>Kutija komplet (Baza, Poklopac, Okviri)</option>
+                        <option value="cep">Čep komplet (Čep, 4 Kvadrata za strane)</option>
+                        <option value="sve">Sve (Kompletna kutija i čep)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="color-section" id="boja2-miks-sekcija">
+            <h3>🎨 Korak 4: Boja 2 - Kombinovana porudžbina</h3>
+            <div class="form-group">
+                <div>
+                    <label>Naziv boje</label>
+                    <input type="text" id="boja2ImeMiks" value="Bela">
+                </div>
+                <div>
+                    <label>Šta se pravi od ove boje?</label>
+                    <select id="boja2SadrzajMiks">
+                        <option value="cep" selected>Čep komplet (Čep, 4 Kvadrata za strane)</option>
+                        <option value="kutija">Kutija komplet (Baza, Poklopac, Okviri)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <button class="calc-btn" onclick="generisiMiksMaterijal()">Izračunaj Poligonalno Uklapanje za Sve Kutije</button>
+        <div id="results-miks"></div>
+    </div>
+
+    <!-- TAB 4: POP-UP KOCKE (25x15 cm) -->
+    <div id="tab-popup" class="tab-content">
+        <div class="color-section" style="background:#eef7fa; border-color:#b8daff;">
+            <h3>🎲 Kalkulator tabaka za Pop-Up Kocke (25 x 15 cm)</h3>
+            <div class="form-group">
+                <div class="qty-highlight">
+                    <label>📦 Ukupan broj Pop-Up kocki (kom)</label>
+                    <input type="number" id="brojKocki" value="12" min="1">
+                </div>
+                <div>
+                    <label>Boja papira za kocke</label>
+                    <input type="text" id="bojaKocki" value="Bela / Zlatna">
+                </div>
+            </div>
+            <button class="calc-btn" style="margin-bottom:0;" onclick="generisiPopUpTab()">Izračunaj Tabake i Prikaži Šablon Kocke</button>
+        </div>
+        <div id="results-popup"></div>
+    </div>
+</div>
+
+<script>
+// Globalno skladište izračunatih šablona i tabaka za direktan PDF/SVG eksport
+window.sabloniCache = {};
+window.tabaciCache = {};
+
+function f(num) {
+    return Number(num.toFixed(1)).toString().replace('.', ',');
+}
+
+function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+    document.getElementById('shared-inputs').style.display = (tabId === 'tab-sabloni' || tabId === 'tab-materijal') ? 'flex' : 'none';
+    if (tabId === 'tab-popup' && document.getElementById('results-popup').innerHTML === '') {
+        generisiPopUpTab();
+    }
+}
+
+function toggleBoja(selectId, targetId) {
+    let br = document.getElementById(selectId).value;
+    document.getElementById(targetId).style.display = (br === "2") ? "block" : "none";
+}
+
+function proveriTipSadrzaja() {
+    let tip = document.getElementById('tip').value;
+    let leptirWGroup = document.getElementById('leptirW-group');
+    let leptirHGroup = document.getElementById('leptirH-group');
+
+    if (tip === 'leptiri' || tip === 'oba') {
+        leptirWGroup.style.display = 'block';
+        leptirHGroup.style.display = 'block';
+    } else {
+        leptirWGroup.style.display = 'none';
+        leptirHGroup.style.display = 'none';
+    }
+}
+
+// CENTRALNA REVIDIRANA LOGIKA ZA ČEP I BAZU KUTIJE
+function izracunajDimenzijeKutije(cepW, cepL, cepH, deb, tip, customLW, customLH) {
+    let lW = customLW !== undefined ? customLW : (parseFloat(document.getElementById('leptirW')?.value) || 13.5);
+    let lH = customLH !== undefined ? customLH : (parseFloat(document.getElementById('leptirH')?.value) || 11.0);
+
+    let finalCepW = cepW;
+    let finalCepL = cepL;
+    let finalCepH = cepH;
+    let boxW, boxL, boxH;
+
+    if (tip === 'kocke') {
+        finalCepW = Math.max(cepW, 10.5);
+        finalCepL = Math.max(cepL, 5.5);
+        finalCepH = cepH;
+
+        boxW = finalCepW + (2 * deb);
+        boxL = finalCepL + (2 * deb);
+        boxH = finalCepH + 3.0;
+    } 
+    else if (tip === 'leptiri') {
+        finalCepW = Math.max(cepW, lW);
+        finalCepL = Math.max(cepL, lW);
+        finalCepH = Math.max(cepH, lH);
+
+        boxW = finalCepW + (0.5 * 2) + (2 * deb);
+        boxL = finalCepL + (0.5 * 2) + (2 * deb);
+        boxH = finalCepH + 0.5;
+    } 
+    else if (tip === 'oba') {
+        let cepZaKockeW = Math.max(cepW, 10.5);
+        let cepZaKockeL = Math.max(cepL, 5.5);
+
+        let cepZaLeptireW = Math.max(cepW, lW);
+        let cepZaLeptireL = Math.max(cepL, lW);
+
+        finalCepW = Math.max(cepZaKockeW, cepZaLeptireW);
+        finalCepL = Math.max(cepZaKockeL, cepZaLeptireL);
+        finalCepH = Math.max(cepH, lH);
+
+        let wK = finalCepW + (2 * deb);
+        let lK = finalCepL + (2 * deb);
+        let hK = finalCepH + 3.0;
+
+        let wL = finalCepW + (0.5 * 2) + (2 * deb);
+        let lL = finalCepL + (0.5 * 2) + (2 * deb);
+        let hL = finalCepH + 0.5;
+
+        boxW = Math.max(wK, wL);
+        boxL = Math.max(lK, lL);
+        boxH = Math.max(hK, hL);
+    }
+
+    let okvirCepaZid = (tip === 'leptiri' || tip === 'oba') ? 5.0 : 3.0;
+
+    return {
+        boxW: boxW, boxL: boxL, boxH: boxH,
+        pokW: boxW + 0.4, pokL: boxL + 0.4, pokH: 3.0,
+        cepW: finalCepW, cepL: finalCepL, cepH: finalCepH,
+        okvirCepaZid: okvirCepaZid,
+        tip: tip
+    };
+}
+
+function dobijMereZaTip(tipOverride) {
+    let cepW = parseFloat(document.getElementById('cepW').value);
+    let cepL = parseFloat(document.getElementById('cepL').value);
+    let cepH = parseFloat(document.getElementById('cepH').value);
+    let deb = parseFloat(document.getElementById('debljina').value);
+    let tip = tipOverride || document.getElementById('tip').value;
+    return izracunajDimenzijeKutije(cepW, cepL, cepH, deb, tip);
+}
+
+// =========================================================================
+// GENERATOR VEKTORSKE GEOMETRIJE (ZA EKRAN, NESTING I 1:1 ŠTAMPARSKI PDF)
+// =========================================================================
+function dobijGeometrijuSablona(shapeType, p) {
+    let cuts = [];
+    let folds = [];
+    let bbW = 0, bbH = 0;
+
+    if (shapeType === 'baza') {
+        let { w, l, h } = p;
+        bbW = 2*h + w; bbH = 2*h + l;
+        cuts.push([
+            [h,0], [h+w,0], [h+w,h], [2*h+w,h], [2*h+w,h+l], [h+w,h+l],
+            [h+w,2*h+l], [h,2*h+l], [h,h+l], [0,h+l], [0,h], [h,h], [h,0]
+        ]);
+        folds.push([[h,h],[h+w,h]], [[h,h+l],[h+w,h+l]], [[h,h],[h,h+l]], [[h+w,h],[h+w,h+l]]);
+    }
+    else if (shapeType === 'poklopac') {
+        let { w, l, h } = p;
+        bbW = 2*h + w; bbH = 2*h + l;
+        cuts.push([[0,0], [bbW,0], [bbW,bbH], [0,bbH], [0,0]]);
+        cuts.push([[h,0],[h,h]], [[h+w,0],[h+w,h]], [[h,h+l],[h,bbH]], [[h+w,h+l],[h+w,bbH]]);
+        folds.push([[0,h],[bbW,h]], [[0,h+l],[bbW,h+l]], [[h,h],[h,h+l]], [[h+w,h],[h+w,h+l]]);
+    }
+    else if (shapeType === 'cep') {
+        let { w, l, h } = p;
+        bbW = 2*h + w; bbH = 2*h + l;
+        let t = Math.min(h, l / 2);
+        cuts.push([
+            [h-t,0], [h+w+t,0], [h+w+t,h], [bbW,h], [bbW,h+l], [h+w+t,h+l],
+            [h+w+t,bbH], [h-t,bbH], [h-t,h+l], [0,h+l], [0,h], [h-t,h], [h-t,0]
+        ]);
+        cuts.push([[h-t,h],[h,h]], [[h+w,h],[h+w+t,h]], [[h-t,h+l],[h,h+l]], [[h+w,h+l],[h+w+t,h+l]]);
+        folds.push([[h,0],[h,bbH]], [[h+w,0],[h+w,bbH]], [[h,h],[h+w,h]], [[h,h+l],[h+w,h+l]]);
+    }
+    else if (shapeType === 'traka') {
+        let { w, l, hKlapna, hZid } = p;
+        let p1 = w, p2 = w + l, p3 = 2*w + l, p4 = 2*w + 2*l;
+        bbW = p4 + 1.0; bbH = hZid + hKlapna;
+        cuts.push([[0,0], [bbW,0], [bbW,bbH], [0,bbH], [0,0]]);
+        cuts.push([[p1,hZid],[p1,bbH]], [[p2,hZid],[p2,bbH]], [[p3,hZid],[p3,bbH]], [[p4,hZid],[p4,bbH]]);
+        folds.push([[0,hZid],[bbW,hZid]], [[p1,0],[p1,hZid]], [[p2,0],[p2,hZid]], [[p3,0],[p3,hZid]], [[p4,0],[p4,hZid]]);
+    }
+    else if (shapeType === 'rect') {
+        let { w, h } = p;
+        bbW = w; bbH = h;
+        cuts.push([[0,0], [w,0], [w,h], [0,h], [0,0]]);
+    }
+    else if (shapeType === 'popup') {
+        bbW = 25; bbH = 15;
+        cuts.push([
+            [0,5], [5,5], [6,6], [7,5], [6,4], [6,1], [7,0], [12,5], [17,0], [18,1], [18,4], [17,5],
+            [18,6], [19,5], [24,5], [25,6], [25,9], [24,10], [19,10], [18,9], [17,10], [18,11], [18,14],
+            [17,15], [12,10], [7,15], [6,14], [6,11], [7,10], [6,9], [5,10], [0,10], [0,5]
+        ]);
+        folds.push(
+            [[5,5],[5,10]], [[6,6],[6,9]], [[7,0],[7,15]], [[12,5],[12,10]], [[17,0],[17,15]],
+            [[18,6],[18,9]], [[19,5],[19,10]], [[24,5],[24,10]], [[7,5],[17,5]], [[7,10],[17,10]],
+            [[7,5],[9.5,2.5]], [[17,5],[14.5,2.5]], [[7,10],[9.5,12.5]], [[17,10],[14.5,12.5]]
+        );
+    }
+
+    return { cuts, folds, bbW, bbH };
+}
+
+function transformisiTacku(pt, xOff, yOff, rotated, origH) {
+    let [x, y] = pt;
+    if (!rotated) return [xOff + x, yOff + y];
+    // Rotacija 90 stepeni udesno: (x, y) -> (origH - y, x)
+    return [xOff + (origH - y), yOff + x];
+}
+
+// =========================================================================
+// EKSPORT U 1:1 VEKTORSKI PDF I SVG ZA ŠTAMPARIJU (BEZ TEKSTA, TAČNO U MM)
+// =========================================================================
+function nacrtajSablonNaStraniciPDF(doc, shapeType, params, marginMm = 10) {
+    let geom = dobijGeometrijuSablona(shapeType, params);
+    // Crvene pune linije za sečenje (štanc)
+    doc.setDrawColor(220, 0, 0);
+    doc.setLineWidth(0.25);
+    doc.setLineDashPattern([], 0);
+    geom.cuts.forEach(poly => {
+        for (let i = 0; i < poly.length - 1; i++) {
+            doc.line(
+                marginMm + poly[i][0] * 10, marginMm + poly[i][1] * 10,
+                marginMm + poly[i+1][0] * 10, marginMm + poly[i+1][1] * 10
+            );
+        }
+    });
+
+    // Plave isprekidane linije za bigovanje (savijanje)
+    doc.setDrawColor(0, 80, 220);
+    doc.setLineWidth(0.25);
+    doc.setLineDashPattern([2, 2], 0);
+    geom.folds.forEach(seg => {
+        doc.line(
+            marginMm + seg[0][0] * 10, marginMm + seg[0][1] * 10,
+            marginMm + seg[1][0] * 10, marginMm + seg[1][1] * 10
+        );
+    });
+}
+
+function eksportujSablonPDF(key) {
+    let item = window.sabloniCache[key];
+    if (!item) return;
+    const { jsPDF } = window.jspdf;
+    let geom = dobijGeometrijuSablona(item.shapeType, item.params);
+    let marginMm = 10;
+    let pageW = geom.bbW * 10 + marginMm * 2;
+    let pageH = geom.bbH * 10 + marginMm * 2;
+    let orient = pageW >= pageH ? 'l' : 'p';
+
+    const doc = new jsPDF({ orientation: orient, unit: 'mm', format: [pageW, pageH] });
+    nacrtajSablonNaStraniciPDF(doc, item.shapeType, item.params, marginMm);
+    doc.save(`${item.cleanFileName}_${f(geom.bbW)}x${f(geom.bbH)}cm_1na1.pdf`);
+}
+
+function eksportujSablonSVG(key) {
+    let item = window.sabloniCache[key];
+    if (!item) return;
+    let geom = dobijGeometrijuSablona(item.shapeType, item.params);
+    let marginCm = 0.5;
+    let totalW = geom.bbW + marginCm * 2;
+    let totalH = geom.bbH + marginCm * 2;
+
+    let svg = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+    svg += `<svg width="${(totalW*10).toFixed(1)}mm" height="${(totalH*10).toFixed(1)}mm" viewBox="${-marginCm} ${-marginCm} ${totalW} ${totalH}" xmlns="http://www.w3.org/2000/svg">\n`;
+    geom.cuts.forEach(poly => {
+        let d = poly.map((pt, idx) => `${idx===0?'M':'L'} ${pt[0].toFixed(3)},${pt[1].toFixed(3)}`).join(' ');
+        svg += `  <path d="${d}" fill="none" stroke="#ff0000" stroke-width="0.03" />\n`;
+    });
+    geom.folds.forEach(seg => {
+        svg += `  <line x1="${seg[0][0].toFixed(3)}" y1="${seg[0][1].toFixed(3)}" x2="${seg[1][0].toFixed(3)}" y2="${seg[1][1].toFixed(3)}" stroke="#0000ff" stroke-width="0.03" stroke-dasharray="0.2,0.2" />\n`;
+    });
+    svg += `</svg>`;
+
+    let blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+    let link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${item.cleanFileName}_${f(geom.bbW)}x${f(geom.bbH)}cm_1na1.svg`;
+    link.click();
+}
+
+function eksportujSveSablonePDF() {
+    let keys = Object.keys(window.sabloniCache);
+    if (keys.length === 0) return;
+    const { jsPDF } = window.jspdf;
+    let doc = null;
+    let marginMm = 10;
+
+    keys.forEach((key, idx) => {
+        let item = window.sabloniCache[key];
+        let geom = dobijGeometrijuSablona(item.shapeType, item.params);
+        let pageW = geom.bbW * 10 + marginMm * 2;
+        let pageH = geom.bbH * 10 + marginMm * 2;
+        let orient = pageW >= pageH ? 'l' : 'p';
+
+        if (idx === 0) {
+            doc = new jsPDF({ orientation: orient, unit: 'mm', format: [pageW, pageH] });
+        } else {
+            doc.addPage([pageW, pageH], orient);
+        }
+        nacrtajSablonNaStraniciPDF(doc, item.shapeType, item.params, marginMm);
+    });
+
+    doc.save(`BumBox_Svi_Sabloni_1na1_Za_Stampariju.pdf`);
+}
+
+function eksportujTabakPDF(binKey) {
+    let binObj = window.tabaciCache[binKey];
+    if (!binObj) return;
+    const { jsPDF } = window.jspdf;
+    let pageW = binObj.binW * 10;
+    let pageH = binObj.binH * 10;
+
+    const doc = new jsPDF({ orientation: pageW >= pageH ? 'l' : 'p', unit: 'mm', format: [pageW, pageH] });
+
+    binObj.items.forEach(b => {
+        let geom = dobijGeometrijuSablona(b.shapeType, b.params);
+        // Linije sečenja (crveno)
+        doc.setDrawColor(220, 0, 0);
+        doc.setLineWidth(0.25);
+        doc.setLineDashPattern([], 0);
+        geom.cuts.forEach(poly => {
+            for (let i = 0; i < poly.length - 1; i++) {
+                let p1 = transformisiTacku(poly[i], b.fit.x, b.fit.y, b.rotated, geom.bbH);
+                let p2 = transformisiTacku(poly[i+1], b.fit.x, b.fit.y, b.rotated, geom.bbH);
+                doc.line(p1[0] * 10, p1[1] * 10, p2[0] * 10, p2[1] * 10);
+            }
+        });
+
+        // Linije bigovanja (plavo isprekidano)
+        doc.setDrawColor(0, 80, 220);
+        doc.setLineWidth(0.25);
+        doc.setLineDashPattern([2, 2], 0);
+        geom.folds.forEach(seg => {
+            let p1 = transformisiTacku(seg[0], b.fit.x, b.fit.y, b.rotated, geom.bbH);
+            let p2 = transformisiTacku(seg[1], b.fit.x, b.fit.y, b.rotated, geom.bbH);
+            doc.line(p1[0] * 10, p1[1] * 10, p2[0] * 10, p2[1] * 10);
+        });
+    });
+
+    doc.save(`Tabak_${binObj.binW}x${binObj.binH}cm_${binKey}_1na1.pdf`);
+}
+
+// =========================================================================
+// ISCRTAVANJE ŠABLONA NA EKRANU (TAB 1)
+// =========================================================================
+function generisiSVG(key, naslov, w, l, h, type, cleanFileName) {
+    let bbW = 2*h + w;
+    let bbL = 2*h + l;
+    let t = Math.min(h, l / 2); 
+
+    window.sabloniCache[key] = { shapeType: type, params: { w, l, h }, cleanFileName };
+
+    let svgStr = `<svg viewBox="-4 -4 ${bbW + 8} ${bbL + 8}" xmlns="http://www.w3.org/2000/svg">`;
+    svgStr += `<style>
+        .cut { stroke: red; stroke-width: 0.15; fill: none; }
+        .fold { stroke: blue; stroke-width: 0.15; stroke-dasharray: 1, 1.5; fill: none; }
+        .dim { font-size: ${(bbW/30).toFixed(1)}px; font-family: monospace; fill: #333; font-weight: bold; }
+        .center-text { font-size: ${(bbW/20).toFixed(1)}px; font-weight: bold; fill: #222; }
+        .bg-center { fill: #ebf5fb; } .bg-wall { fill: #fffdf0; } .bg-tab { fill: #f5b7b1; }
+    </style>`;
+
+    svgStr += `<rect x="${h}" y="${h}" width="${w}" height="${l}" class="bg-center" />`;
+    svgStr += `<rect x="0" y="${h}" width="${h}" height="${l}" class="bg-wall" />
+               <rect x="${h+w}" y="${h}" width="${h}" height="${l}" class="bg-wall" />
+               <rect x="${h}" y="0" width="${w}" height="${h}" class="bg-wall" />
+               <rect x="${h}" y="${h+l}" width="${w}" height="${h}" class="bg-wall" />`;
+
+    if (type === 'poklopac') {
+        svgStr += `<rect x="0" y="0" width="${h}" height="${h}" class="bg-tab" />
+                   <rect x="${h+w}" y="0" width="${h}" height="${h}" class="bg-tab" />
+                   <rect x="0" y="${h+l}" width="${h}" height="${h}" class="bg-tab" />
+                   <rect x="${h+w}" y="${h+l}" width="${h}" height="${h}" class="bg-tab" />`;
+    } else if (type === 'cep') {
+        svgStr += `<rect x="${h-t}" y="0" width="${t}" height="${h}" class="bg-tab" />
+                   <rect x="${h+w}" y="0" width="${t}" height="${h}" class="bg-tab" />
+                   <rect x="${h-t}" y="${h+l}" width="${t}" height="${h}" class="bg-tab" />
+                   <rect x="${h+w}" y="${h+l}" width="${t}" height="${h}" class="bg-tab" />`;
+    }
+
+    svgStr += `<text x="${h + w/2}" y="${h + l/2}" text-anchor="middle" dominant-baseline="middle" class="center-text">${f(w)} x ${f(l)}</text>`;
+
+    let ptsX = [0, h, h+w, bbW];
+    let ptsY = [0, h, h+l, bbL];
+
+    let geom = dobijGeometrijuSablona(type, { w, l, h });
+    geom.cuts.forEach(poly => {
+        let d = poly.map((pt, idx) => `${idx===0?'M':'L'} ${pt[0]},${pt[1]}`).join(' ');
+        svgStr += `<path d="${d}" class="cut" />`;
+    });
+    geom.folds.forEach(seg => {
+        svgStr += `<line x1="${seg[0][0]}" y1="${seg[0][1]}" x2="${seg[1][0]}" y2="${seg[1][1]}" class="fold" />`;
+    });
+
+    if (type === 'cep') {
+        ptsX = Array.from(new Set([0, h-t, h, h+w, h+w+t, bbW])).sort((a,b)=>a-b);
+    }
+
+    ptsX.forEach(p => {
+        svgStr += `<text x="${p}" y="-1.0" text-anchor="middle" class="dim">${f(p)}</text>`;
+    });
+    ptsY.forEach(p => {
+        svgStr += `<text x="-1.0" y="${p + 0.3}" text-anchor="end" class="dim">${f(p)}</text>`;
+    });
+
+    svgStr += `</svg>`;
+    let txt = `X-osa: ` + ptsX.map(p => f(p)).join(" -> ") + ` cm\n`;
+    txt += `Y-osa: ` + ptsY.map(p => f(p)).join(" -> ") + ` cm\n`;
+
+    return `<div class="component">
+        <div class="component-header">
+            <h2>${naslov}</h2>
+            <div class="btn-toolbar" style="margin:0;">
+                <button class="export-btn pdf" onclick="eksportujSablonPDF('${key}')">📄 1:1 PDF za štampariju (${f(bbW*10)}x${f(bbL*10)} mm)</button>
+                <button class="export-btn" onclick="eksportujSablonSVG('${key}')">📐 1:1 SVG Vektor</button>
+            </div>
+        </div>
+        <div class="text-measures"><strong>Dimenzije za izradu:</strong> ${f(w)} x ${f(l)} x ${f(h)} cm\n<strong>Ukupan gabarit šablona:</strong> ${f(bbW)} x ${f(bbL)} cm (${f(bbW*10)} x ${f(bbL*10)} mm)\n\n<strong>Kumulativne mere na lenjiru:</strong>\n${txt}</div>
+        <div class="svg-container">${svgStr}</div>
+    </div>`;
+}
+
+function generisiTraku(key, naslov, w, l, hKlapna, hZid, cleanFileName) {
+    let totalW = w + l + w + l + 1.0;
+    let totalH = hKlapna + hZid;
+    let p1 = w, p2 = w + l, p3 = w + l + w, p4 = w + l + w + l;
+    
+    window.sabloniCache[key] = { shapeType: 'traka', params: { w, l, hKlapna, hZid }, cleanFileName };
+
+    let txt = `X-osa: 0 -> ${f(p1)} -> ${f(p2)} -> ${f(p3)} -> ${f(p4)} -> ${f(totalW)} cm\n`;
+    txt += `Y-osa: 0 -> ${f(hKlapna)} (klapna) -> ${f(totalH)} cm (ukupna visina sa zidom od ${f(hZid)} cm)\n`;
+
+    let svg = `<svg viewBox="-4 -3 ${totalW + 6} ${totalH + 6}" xmlns="http://www.w3.org/2000/svg">
+        <style>
+            .cut { fill: none; stroke: red; stroke-width: 0.15; }
+            .fold { stroke: blue; stroke-width: 0.15; stroke-dasharray: 1, 1.5; fill: none; }
+            .dim { font-size: ${(totalW/35).toFixed(1)}px; font-family: monospace; fill: #333; font-weight: bold;}
+            .bg-wall { fill: #fffdf0; } .bg-tab { fill: #f5b7b1; }
+        </style>
+        <rect x="0" y="0" width="${p4}" height="${hZid}" class="bg-wall" />
+        <rect x="${p4}" y="0" width="1" height="${totalH}" class="bg-tab" />
+        <rect x="0" y="${hZid}" width="${p4}" height="${hKlapna}" class="bg-tab" />
+
+        <rect x="0" y="0" width="${totalW}" height="${totalH}" class="cut" />
+        <line x1="${p1}" y1="${hZid}" x2="${p1}" y2="${totalH}" class="cut" />
+        <line x1="${p2}" y1="${hZid}" x2="${p2}" y2="${totalH}" class="cut" />
+        <line x1="${p3}" y1="${hZid}" x2="${p3}" y2="${totalH}" class="cut" />
+        <line x1="${p4}" y1="${hZid}" x2="${p4}" y2="${totalH}" class="cut" />
+
+        <line x1="0" y1="${hZid}" x2="${totalW}" y2="${hZid}" class="fold" />
+        <line x1="${p1}" y1="0" x2="${p1}" y2="${hZid}" class="fold" />
+        <line x1="${p2}" y1="0" x2="${p2}" y2="${hZid}" class="fold" />
+        <line x1="${p3}" y1="0" x2="${p3}" y2="${hZid}" class="fold" />
+        <line x1="${p4}" y1="0" x2="${p4}" y2="${hZid}" class="fold" />
+        
+        <text x="${p1/2}" y="${hZid/2}" text-anchor="middle" dominant-baseline="middle" class="dim">${f(w)}x${f(hZid)}</text>
+        <text x="${p1 + l/2}" y="${hZid/2}" text-anchor="middle" dominant-baseline="middle" class="dim">${f(l)}x${f(hZid)}</text>
+        <text x="${p2 + w/2}" y="${hZid/2}" text-anchor="middle" dominant-baseline="middle" class="dim">${f(w)}x${f(hZid)}</text>
+        <text x="${p3 + l/2}" y="${hZid/2}" text-anchor="middle" dominant-baseline="middle" class="dim">${f(l)}x${f(hZid)}</text>
+        
+        ${[0, p1, p2, p3, p4, totalW].map(p => `<text x="${p}" y="-0.8" text-anchor="middle" class="dim" style="font-size: ${(totalW/40).toFixed(1)}px;">${f(p)}</text>`).join('')}
+        ${[0, hKlapna, totalH].map(p => `<text x="-0.8" y="${totalH - p + 0.3}" text-anchor="end" class="dim" style="font-size: ${(totalW/40).toFixed(1)}px;">${f(p)}</text>`).join('')}
+    </svg>`;
+
+    return `<div class="component">
+        <div class="component-header">
+            <h2>${naslov}</h2>
+            <div class="btn-toolbar" style="margin:0;">
+                <button class="export-btn pdf" onclick="eksportujSablonPDF('${key}')">📄 1:1 PDF za štampariju (${f(totalW*10)}x${f(totalH*10)} mm)</button>
+                <button class="export-btn" onclick="eksportujSablonSVG('${key}')">📐 1:1 SVG Vektor</button>
+            </div>
+        </div>
+        <div class="text-measures"><strong>Kumulativne mere na lenjiru:</strong>\n${txt}</div>
+        <div class="svg-container">${svg}</div>
+    </div>`;
+}
+
+function generisiDekoraciju(boxW, boxL, boxH) {
+    let p = 0.93;
+    let prednjiW = boxW * p, prednjiH = boxH * p;
+    let bocniW = boxL * p, bocniH = boxH * p;
+
+    window.sabloniCache['dekor_prednji'] = { shapeType: 'rect', params: { w: prednjiW, h: prednjiH }, cleanFileName: '6a_Dekor_Prednji_Zadnji' };
+    window.sabloniCache['dekor_bocni'] = { shapeType: 'rect', params: { w: bocniW, h: bocniH }, cleanFileName: '6b_Dekor_Bocni' };
+
+    let maxW = (prednjiW * 2) + (bocniW * 2) + 8;
+    let maxH = prednjiH + 4;
+
+    let svg = `<svg viewBox="-2 -2 ${maxW} ${maxH}" xmlns="http://www.w3.org/2000/svg">
+        <style>
+            .cut { fill: #ebf5fb; stroke: red; stroke-width: 0.15; }
+            .dim { font-size: ${(maxW/35).toFixed(1)}px; font-family: monospace; fill: #222; font-weight: bold;}
+            .title { font-size: ${(maxW/32).toFixed(1)}px; font-weight: bold; fill: #2980b9; }
+        </style>
+        
+        <rect x="0" y="2" width="${prednjiW}" height="${prednjiH}" class="cut" />
+        <text x="${prednjiW/2}" y="${2 + prednjiH/2}" text-anchor="middle" class="dim">${f(prednjiW)}x${f(prednjiH)}</text>
+        <text x="${prednjiW/2}" y="1" text-anchor="middle" class="title">Prednji zid</text>
+
+        <rect x="${prednjiW+2}" y="2" width="${prednjiW}" height="${prednjiH}" class="cut" />
+        <text x="${prednjiW*1.5+2}" y="${2 + prednjiH/2}" text-anchor="middle" class="dim">${f(prednjiW)}x${f(prednjiH)}</text>
+        <text x="${prednjiW*1.5+2}" y="1" text-anchor="middle" class="title">Zadnji zid</text>
+
+        <rect x="${prednjiW*2+4}" y="2" width="${bocniW}" height="${bocniH}" class="cut" />
+        <text x="${prednjiW*2+4 + bocniW/2}" y="${2 + bocniH/2}" text-anchor="middle" class="dim">${f(bocniW)}x${f(bocniH)}</text>
+        <text x="${prednjiW*2+4 + bocniW/2}" y="1" text-anchor="middle" class="title">Bočni zid 1</text>
+
+        <rect x="${prednjiW*2+bocniW+6}" y="2" width="${bocniW}" height="${bocniH}" class="cut" />
+        <text x="${prednjiW*2+bocniW*1.5+6}" y="${2 + bocniH/2}" text-anchor="middle" class="dim">${f(bocniW)}x${f(bocniH)}</text>
+        <text x="${prednjiW*2+bocniW*1.5+6}" y="1" text-anchor="middle" class="title">Bočni zid 2</text>
+    </svg>`;
+
+    return `<div class="component">
+        <div class="component-header">
+            <h2>6. Dekorativni Paneli (Samo 4 bočna zida)</h2>
+            <div class="btn-toolbar" style="margin:0;">
+                <button class="export-btn pdf" onclick="eksportujSablonPDF('dekor_prednji')">📄 PDF Prednji/Zadnji (${f(prednjiW*10)}x${f(prednjiH*10)} mm)</button>
+                <button class="export-btn pdf" onclick="eksportujSablonPDF('dekor_bocni')">📄 PDF Bočni (${f(bocniW*10)}x${f(bocniH*10)} mm)</button>
+            </div>
+        </div>
+        <div class="text-measures">Lepe se na 4 bočne stranice baze (bez dna i poklopca). Umanjeni na 93% površine stranice.</div>
+        <div class="svg-container">${svg}</div>
+    </div>`;
+}
+
+function generisiSablone() {
+    window.sabloniCache = {};
+    let m = dobijMereZaTip();
+    let html = "";
+    
+    html += generisiSVG("baza", "1. Spoljna Kutija / Baza", m.boxW, m.boxL, m.boxH, 'baza', '1_Spoljna_Baza');
+    html += generisiSVG("poklopac", "2. Spoljni Poklopac (Zazor +4mm)", m.pokW, m.pokL, m.pokH, 'poklopac', '2_Spoljni_Poklopac');
+    
+    if (m.tip === 'kocke' || m.tip === 'oba') {
+        html += generisiTraku("okvir_kocke", "3. Okvir za kocke (ide u poklopac, visina 3cm + 1cm klapna)", 10.5, 5.5, 1.0, 3.0, '3_Okvir_Za_Kocke');
+    }
+    
+    html += generisiSVG("cep", "4. Unutrašnji Čep (Dimenzije za izradu)", m.cepW, m.cepL, m.cepH, 'cep', '4_Unutrasnji_Cep');
+    html += generisiTraku("okvir_cepa", `5. Okvir Čepa (lepi se na dno kutije, visina ${f(m.okvirCepaZid)}cm + 1cm klapna)`, m.cepW - 0.5, m.cepL - 0.5, 1.0, m.okvirCepaZid, '5_Okvir_Cepa');
+    html += generisiDekoraciju(m.boxW, m.boxL, m.boxH);
+
+    document.getElementById('results-sabloni').innerHTML = html;
+}
+
+// =========================================================================
+// TRUE-SHAPE (POLIGONALNI) RASTER ALGORITAM ZA UKLAPANJE PRAVIH ŠABLONA
+// Prepoznaje prazne uglove krstača (baze, čepa, pop-up kocke) i uvlači delove!
+// =========================================================================
+const GRID_SCALE = 2; // Rezolucija mreže: 0.5 cm (5 mm) po ćeliji za maksimalnu brzinu i preciznost
+
+function kreirajMaskuOblika(shapeType, params, rotated) {
+    let geom = dobijGeometrijuSablona(shapeType, params);
+    let W = rotated ? geom.bbH : geom.bbW;
+    let H = rotated ? geom.bbW : geom.bbH;
+    let gw = Math.ceil(W * GRID_SCALE);
+    let gh = Math.ceil(H * GRID_SCALE);
+    let mask = new Uint8Array(gw * gh);
+    mask.fill(1); // Podrazumevano zauzeto
+
+    if (shapeType === 'baza') {
+        let { w, l, h } = params;
+        for (let r = 0; r < gh; r++) {
+            for (let c = 0; c < gw; c++) {
+                let x = (c + 0.5) / GRID_SCALE;
+                let y = (r + 0.5) / GRID_SCALE;
+                let ox = rotated ? y : x;
+                let oy = rotated ? (geom.bbH - x) : y;
+                // 4 ugla krstače su potpuno prazna i slobodna za druge delove!
+                let uUglu = (ox < h && oy < h) || (ox > h + w && oy < h) ||
+                            (ox < h && oy > h + l) || (ox > h + w && oy > h + l);
+                if (uUglu) mask[r * gw + c] = 0;
+            }
+        }
+    } 
+    else if (shapeType === 'cep') {
+        let { w, l, h } = params;
+        let t = Math.min(h, l / 2);
+        for (let r = 0; r < gh; r++) {
+            for (let c = 0; c < gw; c++) {
+                let x = (c + 0.5) / GRID_SCALE;
+                let y = (r + 0.5) / GRID_SCALE;
+                let ox = rotated ? y : x;
+                let oy = rotated ? (geom.bbH - x) : y;
+                // Spoljni delovi uglova van klapni (h - t) su slobodni
+                let uUglu = (ox < h - t && oy < h) || (ox > h + w + t && oy < h) ||
+                            (ox < h - t && oy > h + l) || (ox > h + w + t && oy > h + l);
+                if (uUglu) mask[r * gw + c] = 0;
+            }
+        }
+    }
+    else if (shapeType === 'popup') {
+        for (let r = 0; r < gh; r++) {
+            for (let c = 0; c < gw; c++) {
+                let x = (c + 0.5) / GRID_SCALE;
+                let y = (r + 0.5) / GRID_SCALE;
+                let ox = rotated ? y : x;
+                let oy = rotated ? (geom.bbH - x) : y;
+                // Prazni prostori levo (0..6 cm) i desno (18..25 cm) iznad i ispod krakova
+                let prazno = (ox < 6 && (oy < 5 || oy > 10)) || (ox > 18 && (oy < 5 || oy > 10));
+                if (prazno) mask[r * gw + c] = 0;
+            }
+        }
+    }
+
+    // Stvarna površina šablona (broj zauzetih ćelija) za sortiranje
+    let occupiedCells = 0;
+    for (let i = 0; i < mask.length; i++) occupiedCells += mask[i];
+
+    return { gw, gh, mask, W, H, occupiedCells };
+}
+
+class TrueShapeBinPacker {
+    constructor(binW, binH) {
+        this.binW = binW;
+        this.binH = binH;
+        this.gw = Math.floor(binW * GRID_SCALE);
+        this.gh = Math.floor(binH * GRID_SCALE);
+        this.grid = new Uint8Array(this.gw * this.gh);
+    }
+
+    fit(blocks) {
+        for (let i = 0; i < blocks.length; i++) {
+            let b = blocks[i];
+            let m0 = kreirajMaskuOblika(b.shapeType, b.params, false);
+            let m90 = kreirajMaskuOblika(b.shapeType, b.params, true);
+
+            let bestPos = null;
+            let bestScore = Infinity;
+
+            let orientations = [{ rotated: false, m: m0 }];
+            if (Math.abs(m0.W - m0.H) > 0.05 || b.shapeType === 'popup') {
+                orientations.push({ rotated: true, m: m90 });
+            }
+
+            for (let orient of orientations) {
+                let m = orient.m;
+                if (m.gw > this.gw || m.gh > this.gh) continue;
+
+                for (let r = 0; r <= this.gh - m.gh; r++) {
+                    for (let c = 0; c <= this.gw - m.gw; c++) {
+                        if (this.canPlace(c, r, m)) {
+                            // Bottom-Left heuristika koja gura oblike u same uglove i šupljine krstača
+                            let score = (r * this.gw + c) + (orient.rotated ? 0.1 : 0);
+                            if (score < bestScore) {
+                                bestScore = score;
+                                bestPos = { c, r, rotated: orient.rotated, m };
+                            }
+                            break; // Čim nađe najlevlje mesto u ovom redu, prelazi dalje radi brzine
+                        }
+                    }
+                }
+            }
+
+            if (bestPos) {
+                this.place(bestPos.c, bestPos.r, bestPos.m);
+                b.fit = { x: bestPos.c / GRID_SCALE, y: bestPos.r / GRID_SCALE };
+                b.rotated = bestPos.rotated;
+                b.w = bestPos.m.W;
+                b.h = bestPos.m.H;
+            }
+        }
+    }
+
+    canPlace(c0, r0, m) {
+        for (let r = 0; r < m.gh; r++) {
+            let rowOffset = (r0 + r) * this.gw + c0;
+            let maskOffset = r * m.gw;
+            for (let c = 0; c < m.gw; c++) {
+                if (m.mask[maskOffset + c] === 1 && this.grid[rowOffset + c] === 1) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    place(c0, r0, m) {
+        for (let r = 0; r < m.gh; r++) {
+            let rowOffset = (r0 + r) * this.gw + c0;
+            let maskOffset = r * m.gw;
+            for (let c = 0; c < m.gw; c++) {
+                if (m.mask[maskOffset + c] === 1) {
+                    this.grid[rowOffset + c] = 1;
+                }
+            }
+        }
+    }
+}
+
+function packTrueShapeBlocks(items, binW, binH) {
+    let toPack = items.map(i => ({
+        w: i.w, h: i.h, name: i.name, shapeType: i.shapeType, params: i.params,
+        priorityArea: kreirajMaskuOblika(i.shapeType, i.params, false).occupiedCells
+    }));
+    // Prvo postavljamo velike krstače (baze i čepove), pa manje delove koji popunjavaju njihove prazne uglove!
+    toPack.sort((a,b) => b.priorityArea - a.priorityArea);
+    
+    let bins = [];
+    while (toPack.length > 0) {
+        let packer = new TrueShapeBinPacker(binW, binH);
+        packer.fit(toPack);
+        
+        let packed = [], notPacked = [];
+        for (let item of toPack) {
+            if (item.fit) packed.push(item);
+            else notPacked.push(item);
+        }
+        
+        if (packed.length === 0) break;
+        bins.push(packed);
+        toPack = notPacked;
+    }
+    return { bins: bins, unplaced: toPack.length };
+}
+
+function optimalnoPakovanje(items) {
+    if (items.length === 0) return { bins: [], cost: 0, count100: 0, count50: 0 };
+    
+    let fullLarge = packTrueShapeBlocks(items, 100, 70).bins;
+    let maxL = fullLarge.length;
+
+    let bestCost = Infinity;
+    let bestCombo = [];
+    let bestC100 = 0, bestC50 = 0;
+
+    for (let numL = 0; numL <= maxL; numL++) {
+        let remaining = items.map(i => ({
+            w: i.w, h: i.h, name: i.name, shapeType: i.shapeType, params: i.params,
+            priorityArea: kreirajMaskuOblika(i.shapeType, i.params, false).occupiedCells
+        }));
+        remaining.sort((a,b) => b.priorityArea - a.priorityArea);
+
+        let currentBins = [];
+        let possible = true;
+
+        for (let l = 0; l < numL; l++) {
+            if (remaining.length === 0) break;
+            let packer = new TrueShapeBinPacker(100, 70);
+            packer.fit(remaining);
+            let packed = [], notPacked = [];
+            for (let item of remaining) {
+                if (item.fit) packed.push(item);
+                else notPacked.push(item);
+            }
+            if (packed.length > 0) {
+                currentBins.push({ items: packed, type: 'Tabak 100x70 cm (180 RSD)', cost: 180, binW: 100, binH: 70 });
+            }
+            remaining = notPacked;
+        }
+
+        let smallRes = packTrueShapeBlocks(remaining, 70, 50);
+        if (smallRes.unplaced > 0) {
+            possible = false;
+        } else {
+            for (let sBin of smallRes.bins) {
+                currentBins.push({ items: sBin, type: 'Tabak 70x50 cm (100 RSD)', cost: 100, binW: 70, binH: 50 });
+            }
+        }
+
+        if (possible) {
+            let c100 = currentBins.filter(b => b.binW === 100).length;
+            let c50 = currentBins.filter(b => b.binW === 70).length;
+            let cost = c100 * 180 + c50 * 100;
+            if (cost < bestCost) {
+                bestCost = cost;
+                bestCombo = currentBins;
+                bestC100 = c100;
+                bestC50 = c50;
+            }
+        }
+    }
+
+    return { bins: bestCombo, cost: bestCost, count100: bestC100, count50: bestC50 };
+}
+
+function kreirajDelove(m, num, grupaFiltar, sufix = "") {
+    let elementi = [];
+    let ozn = sufix ? ` (${sufix})` : "";
+    for(let i=0; i<num; i++) {
+        if (grupaFiltar === "kutija" || grupaFiltar === "sve") {
+            elementi.push({
+                w: 2*m.boxH + m.boxW, h: 2*m.boxH + m.boxL,
+                name: `Baza${ozn}`, shapeType: 'baza',
+                params: { w: m.boxW, l: m.boxL, h: m.boxH }
+            });
+            elementi.push({
+                w: 2*m.pokH + m.pokW, h: 2*m.pokH + m.pokL,
+                name: `Poklopac${ozn}`, shapeType: 'poklopac',
+                params: { w: m.pokW, l: m.pokL, h: m.pokH }
+            });
+            let okvCepaH = 1.0 + m.okvirCepaZid;
+            elementi.push({
+                w: (m.cepW - 0.5)*2 + (m.cepL - 0.5)*2 + 1.0, h: okvCepaH,
+                name: `Okv.Čep${ozn}`, shapeType: 'traka',
+                params: { w: m.cepW - 0.5, l: m.cepL - 0.5, hKlapna: 1.0, hZid: m.okvirCepaZid }
+            });
+            if (m.tip === 'kocke' || m.tip === 'oba') {
+                elementi.push({
+                    w: 10.5*2 + 5.5*2 + 1.0, h: 4.0,
+                    name: `Okv.Kock${ozn}`, shapeType: 'traka',
+                    params: { w: 10.5, l: 5.5, hKlapna: 1.0, hZid: 3.0 }
+                });
+            }
+        }
+        if (grupaFiltar === "cep" || grupaFiltar === "sve") {
+            elementi.push({
+                w: 2*m.cepH + m.cepW, h: 2*m.cepH + m.cepL,
+                name: `Čep${ozn}`, shapeType: 'cep',
+                params: { w: m.cepW, l: m.cepL, h: m.cepH }
+            });
+            let p = 0.93;
+            elementi.push({ w: m.boxW*p, h: m.boxH*p, name: `Kv.Pred${ozn}`, shapeType: 'rect', params: { w: m.boxW*p, h: m.boxH*p } });
+            elementi.push({ w: m.boxW*p, h: m.boxH*p, name: `Kv.Zad${ozn}`, shapeType: 'rect', params: { w: m.boxW*p, h: m.boxH*p } });
+            elementi.push({ w: m.boxL*p, h: m.boxH*p, name: `Kv.Boč1${ozn}`, shapeType: 'rect', params: { w: m.boxL*p, h: m.boxH*p } });
+            elementi.push({ w: m.boxL*p, h: m.boxH*p, name: `Kv.Boč2${ozn}`, shapeType: 'rect', params: { w: m.boxL*p, h: m.boxH*p } });
+        }
+    }
+    return elementi;
+}
+
+// Renderovanje pravih oblika (krstača, čepova, traka, pop-up kocki) direktno na tabaku!
+function nacrtajOblikNaTabakuSVG(b, bgColor) {
+    let geom = dobijGeometrijuSablona(b.shapeType, b.params);
+    let svg = `<g>`;
+    geom.cuts.forEach((poly, idx) => {
+        let pts = poly.map(pt => transformisiTacku(pt, b.fit.x, b.fit.y, b.rotated, geom.bbH));
+        let d = pts.map((pt, i) => `${i===0?'M':'L'} ${pt[0].toFixed(2)},${pt[1].toFixed(2)}`).join(' ');
+        // Prva kontura dobija ispunu u boji, ostale su unutrašnji rezovi
+        let fill = (idx === 0) ? bgColor : "none";
+        svg += `<path d="${d}" fill="${fill}" stroke="#d90000" stroke-width="0.16" />`;
+    });
+    geom.folds.forEach(seg => {
+        let p1 = transformisiTacku(seg[0], b.fit.x, b.fit.y, b.rotated, geom.bbH);
+        let p2 = transformisiTacku(seg[1], b.fit.x, b.fit.y, b.rotated, geom.bbH);
+        svg += `<line x1="${p1[0].toFixed(2)}" y1="${p1[1].toFixed(2)}" x2="${p2[0].toFixed(2)}" y2="${p2[1].toFixed(2)}" stroke="#0050dc" stroke-width="0.12" stroke-dasharray="0.6,0.6" />`;
+    });
+
+    let rotSign = b.rotated ? " ↻" : "";
+    let cx = b.fit.x + b.w / 2;
+    let cy = b.fit.y + b.h / 2;
+    svg += `<text x="${cx}" y="${cy}" font-size="1.55" text-anchor="middle" dominant-baseline="middle" fill="#111" font-family="sans-serif" font-weight="bold">${b.name}${rotSign}</text>`;
+    svg += `</g>`;
+    return svg;
+}
+
+function renderOptimalBins(packResult, titleText, bgColor, prefixKey) {
+    if (packResult.bins.length === 0) return "";
+    let html = `<h3>${titleText} <span class="badge-info">True-Shape Nesting aktivan (iskorišćeni prazni uglovi krstača)</span></h3>
+                <div class="price-tag">
+                    Optimalno tabaka: <strong>${packResult.count100}x (100x70)</strong> i <strong>${packResult.count50}x (70x50)</strong> 
+                    | Cena: <strong>${packResult.cost} RSD</strong>
+                </div>`;
+    
+    packResult.bins.forEach((binObj, idx) => {
+        let binKey = `${prefixKey}_papir_${idx+1}`;
+        window.tabaciCache[binKey] = binObj;
+
+        let svg = `<svg viewBox="-2 -2 ${binObj.binW+4} ${binObj.binH+4}" style="background:#ecf0f1; border:1px solid #bdc3c7;">`;
+        svg += `<rect x="0" y="0" width="${binObj.binW}" height="${binObj.binH}" fill="#ffffff" stroke="#7f8c8d" stroke-width="0.2" />`;
+        
+        binObj.items.forEach(b => {
+            svg += nacrtajOblikNaTabakuSVG(b, bgColor);
+        });
+        svg += `</svg>`;
+
+        html += `<div class="bin-container">
+            <div class="bin-header">
+                <strong>📄 Papir ${idx+1}: ${binObj.type} (${binObj.items.length} elemenata)</strong>
+                <button class="export-btn pdf" onclick="eksportujTabakPDF('${binKey}')">📥 Preuzmi 1:1 PDF ovog tabaka za štanc (${binObj.binW*10}x${binObj.binH*10} mm)</button>
+            </div>
+            ${svg}
+        </div>`;
+    });
+    return html;
+}
+
+function generisiMaterijal() {
+    let m = dobijMereZaTip();
+    let num = parseInt(document.getElementById('brojKutija').value) || 0;
+    let brBoja = document.getElementById('brojBoja').value;
+    
+    let html = "";
+    let totalCost = 0;
+
+    let boja1Ime = document.getElementById('boja1Ime').value;
+    let b1Sadrzaj = document.getElementById('boja1Sadrzaj').value;
+    let items1 = kreirajDelove(m, num, brBoja === "1" ? "sve" : b1Sadrzaj);
+    let opt1 = optimalnoPakovanje(items1);
+    totalCost += opt1.cost;
+    html += renderOptimalBins(opt1, `Materijal: ${boja1Ime}`, "rgba(241, 196, 15, 0.35)", "tab2_b1");
+
+    if (brBoja === "2") {
+        let boja2Ime = document.getElementById('boja2Ime').value;
+        let b2Sadrzaj = document.getElementById('boja2Sadrzaj').value;
+        let items2 = kreirajDelove(m, num, b2Sadrzaj);
+        let opt2 = optimalnoPakovanje(items2);
+        totalCost += opt2.cost;
+        html += renderOptimalBins(opt2, `Materijal: ${boja2Ime}`, "rgba(235, 245, 251, 0.85)", "tab2_b2");
+    }
+    
+    html = `<div class="summary-banner">
+              <h2 style="margin:0;">💰 Ukupan trošak kartona za ${num} kutija: ${totalCost} RSD</h2>
+            </div>` + html;
+            
+    document.getElementById('results-materijal').innerHTML = html;
+}
+
+function generisiMiksMaterijal() {
+    let kKocke = parseInt(document.getElementById('kolKocke').value) || 0;
+    let kLeptiri = parseInt(document.getElementById('kolLeptiri').value) || 0;
+    let kOba = parseInt(document.getElementById('kolOba').value) || 0;
+    let ukupnoKutija = kKocke + kLeptiri + kOba;
+
+    if (ukupnoKutija === 0) {
+        document.getElementById('results-miks').innerHTML = "<p style='color:red; font-weight:bold;'>Unesi bar 1 kutiju u polje BROJ KUTIJA!</p>";
+        return;
+    }
+
+    let deb = parseFloat(document.getElementById('debMiks').value) || 0.2;
+    let lWMiks = parseFloat(document.getElementById('leptirWMiks').value) || 13.5;
+    let lHMiks = parseFloat(document.getElementById('leptirHMiks').value) || 11.0;
+
+    let mKocke = izracunajDimenzijeKutije(
+        parseFloat(document.getElementById('cepWKocke').value),
+        parseFloat(document.getElementById('cepLKocke').value),
+        parseFloat(document.getElementById('cepHKocke').value),
+        deb, 'kocke', lWMiks, lHMiks
+    );
+    let mLeptiri = izracunajDimenzijeKutije(
+        parseFloat(document.getElementById('cepWLeptiri').value),
+        parseFloat(document.getElementById('cepLLeptiri').value),
+        parseFloat(document.getElementById('cepHLeptiri').value),
+        deb, 'leptiri', lWMiks, lHMiks
+    );
+    let mOba = izracunajDimenzijeKutije(
+        parseFloat(document.getElementById('cepWOba').value),
+        parseFloat(document.getElementById('cepLOba').value),
+        parseFloat(document.getElementById('cepHOba').value),
+        deb, 'oba', lWMiks, lHMiks
+    );
+
+    let brBoja = document.getElementById('brojBojaMiks').value;
+    let html = "";
+    let totalCost = 0;
+
+    let boja1Ime = document.getElementById('boja1ImeMiks').value;
+    let b1Sadrzaj = brBoja === "1" ? "sve" : document.getElementById('boja1SadrzajMiks').value;
+    let items1 = [
+        ...kreirajDelove(mKocke, kKocke, b1Sadrzaj, "Koc"),
+        ...kreirajDelove(mLeptiri, kLeptiri, b1Sadrzaj, "Lep"),
+        ...kreirajDelove(mOba, kOba, b1Sadrzaj, "Oba")
+    ];
+    let opt1 = optimalnoPakovanje(items1);
+    totalCost += opt1.cost;
+    html += renderOptimalBins(opt1, `Materijal: ${boja1Ime}`, "rgba(241, 196, 15, 0.35)", "tab3_b1");
+
+    if (brBoja === "2") {
+        let boja2Ime = document.getElementById('boja2ImeMiks').value;
+        let b2Sadrzaj = document.getElementById('boja2SadrzajMiks').value;
+        let items2 = [
+            ...kreirajDelove(mKocke, kKocke, b2Sadrzaj, "Koc"),
+            ...kreirajDelove(mLeptiri, kLeptiri, b2Sadrzaj, "Lep"),
+            ...kreirajDelove(mOba, kOba, b2Sadrzaj, "Oba")
+        ];
+        let opt2 = optimalnoPakovanje(items2);
+        totalCost += opt2.cost;
+        html += renderOptimalBins(opt2, `Materijal: ${boja2Ime}`, "rgba(235, 245, 251, 0.85)", "tab3_b2");
+    }
+
+    html = `<div class="summary-banner">
+              <h2 style="margin:0;">💰 Ukupan trošak za ${ukupnoKutija} kutija (${kKocke} Samo Kocke, ${kLeptiri} Samo Leptiri, ${kOba} Kocke+Leptiri): ${totalCost} RSD</h2>
+            </div>` + html;
+
+    document.getElementById('results-miks').innerHTML = html;
+}
+
+// --- TAB 4: POP-UP KOCKE (25 x 15 cm) ---
+function generisiPopUpSablonSVG() {
+    window.sabloniCache['popup_kocka'] = { shapeType: 'popup', params: {}, cleanFileName: 'PopUp_Kocka_25x15cm' };
+
+    let ptsX = [0, 5, 6, 7, 12, 17, 18, 19, 24, 25];
+    let ptsY = [0, 5, 10, 15];
+
+    let svg = `<svg viewBox="-3 -3 31 20" xmlns="http://www.w3.org/2000/svg">
+        <style>
+            .cut { stroke: red; stroke-width: 0.15; fill: none; }
+            .fold { stroke: blue; stroke-width: 0.15; stroke-dasharray: 0.7, 0.9; fill: none; }
+            .dim { font-size: 0.85px; font-family: monospace; fill: #333; font-weight: bold; }
+            .bg-center { fill: #ebf5fb; }
+            .bg-wall { fill: #fffdf0; }
+            .bg-tab { fill: #f5b7b1; }
+        </style>
+
+        <rect x="0" y="5" width="5" height="5" class="bg-wall" />
+        <rect x="7" y="5" width="5" height="5" class="bg-center" />
+        <rect x="12" y="5" width="5" height="5" class="bg-center" />
+        <rect x="19" y="5" width="5" height="5" class="bg-wall" />
+
+        <polygon points="7,0 12,5 7,5" class="bg-wall" />
+        <polygon points="17,0 12,5 17,5" class="bg-wall" />
+        <polygon points="7,15 12,10 7,10" class="bg-wall" />
+        <polygon points="17,15 12,10 17,10" class="bg-wall" />
+
+        <polygon points="5,5 6,6 7,5 7,10 6,9 5,10" class="bg-tab" />
+        <polygon points="17,5 18,6 19,5 19,10 18,9 17,10" class="bg-tab" />
+        <polygon points="7,0 6,1 6,4 7,5" class="bg-tab" />
+        <polygon points="17,0 18,1 18,4 17,5" class="bg-tab" />
+        <polygon points="7,10 6,11 6,14 7,15" class="bg-tab" />
+        <polygon points="17,10 18,11 18,14 17,15" class="bg-tab" />
+        <polygon points="24,5 25,6 25,9 24,10" class="bg-tab" />
+
+        <line x1="5" y1="5" x2="5" y2="10" class="fold" />
+        <line x1="6" y1="6" x2="6" y2="9" class="fold" />
+        <line x1="7" y1="0" x2="7" y2="15" class="fold" />
+        <line x1="12" y1="5" x2="12" y2="10" class="fold" />
+        <line x1="17" y1="0" x2="17" y2="15" class="fold" />
+        <line x1="18" y1="6" x2="18" y2="9" class="fold" />
+        <line x1="19" y1="5" x2="19" y2="10" class="fold" />
+        <line x1="24" y1="5" x2="24" y2="10" class="fold" />
+        <line x1="7" y1="5" x2="17" y2="5" class="fold" />
+        <line x1="7" y1="10" x2="17" y2="10" class="fold" />
+        <line x1="7" y1="5" x2="9.5" y2="2.5" class="fold" />
+        <line x1="17" y1="5" x2="14.5" y2="2.5" class="fold" />
+        <line x1="7" y1="10" x2="9.5" y2="12.5" class="fold" />
+        <line x1="17" y1="10" x2="14.5" y2="12.5" class="fold" />
+
+        <path d="M 0,5 L 5,5 L 6,6 L 7,5 L 6,4 L 6,1 L 7,0 L 12,5 L 17,0 L 18,1 L 18,4 L 17,5 L 18,6 L 19,5 L 24,5 L 25,6 L 25,9 L 24,10 L 19,10 L 18,9 L 17,10 L 18,11 L 18,14 L 17,15 L 12,10 L 7,15 L 6,14 L 6,11 L 7,10 L 6,9 L 5,10 L 0,10 Z" class="cut" />
+
+        ${ptsX.map(p => `<text x="${p}" y="-0.8" text-anchor="middle" class="dim">${p}</text>`).join('')}
+        ${ptsY.map(p => `<text x="-0.8" y="${p + 0.3}" text-anchor="end" class="dim">${p}</text>`).join('')}
+    </svg>`;
+
+    return `<div class="component">
+        <div class="component-header">
+            <h2>Šablon: Pop-Up Kocka (25 x 15 cm / 250 x 150 mm)</h2>
+            <div class="btn-toolbar" style="margin:0;">
+                <button class="export-btn pdf" onclick="eksportujSablonPDF('popup_kocka')">📄 1:1 PDF za štampariju (250x150 mm)</button>
+                <button class="export-btn" onclick="eksportujSablonSVG('popup_kocka')">📐 1:1 SVG Vektor</button>
+            </div>
+        </div>
+        <div class="text-measures"><strong>Gabarit jedne kocke:</strong> 25 x 15 cm\n<strong>X-osa:</strong> 0 -> 5 -> 6 -> 7 -> 12 -> 17 -> 18 -> 19 -> 24 -> 25 cm\n<strong>Y-osa:</strong> 0 -> 5 -> 10 -> 15 cm</div>
+        <div class="svg-container">${svg}</div>
+    </div>`;
+}
+
+function generisiPopUpTab() {
+    let brKocki = parseInt(document.getElementById('brojKocki').value) || 1;
+    let boja = document.getElementById('bojaKocki').value;
+
+    let items = [];
+    for (let i = 0; i < brKocki; i++) {
+        items.push({ w: 25, h: 15, name: `Kocka ${i+1}`, shapeType: 'popup', params: {} });
+    }
+
+    let opt = optimalnoPakovanje(items);
+    let html = `<div class="summary-banner">
+                  <h2 style="margin:0;">💰 Ukupan trošak za ${brKocki} Pop-Up kocki (25x15 cm): ${opt.cost} RSD</h2>
+                </div>`;
+    html += generisiPopUpSablonSVG();
+    html += renderOptimalBins(opt, `Raspored sečenja za Pop-Up kocke (${boja}) - True-Shape uklapanje`, "rgba(255, 253, 240, 0.85)", "tab4_popup");
+
+    document.getElementById('results-popup').innerHTML = html;
+}
+
+window.onload = function() {
+    proveriTipSadrzaja();
+    generisiSablone();
+};
+</script>
+
+</body>
+</html>
