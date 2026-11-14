@@ -1366,6 +1366,13 @@ window.onload = function() {
     generisiSablone();
 };
 </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log('Service Worker registrovan!'))
+      .catch((err) => console.log('Greška pri registraciji:', err));
+  }
+</script>
 
 </body>
 </html>
