@@ -10,7 +10,7 @@
         .container { max-width: 1220px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         h1 { text-align: center; color: #2c3e50; margin-top: 0; }
         .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; flex-wrap: wrap; }
-        .tab-btn { flex: 1; min-width: 170px; padding: 12px; background: #ecf0f1; border: none; font-size: 13.5px; font-weight: bold; cursor: pointer; border-radius: 5px; transition: 0.2s; }
+        .tab-btn { flex: 1; min-width: 155px; padding: 12px; background: #ecf0f1; border: none; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 5px; transition: 0.2s; }
         .tab-btn.active { background: #e74c3c; color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -51,9 +51,9 @@
         .qty-highlight input { border-color: #e74c3c; font-weight: bold; font-size: 16px; text-align: center; background: #fff; }
         .badge-info { background: #d4efdf; color: #196f3d; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
 
-        /* STILOVI ZA TAB 5 (OSTATAK PAPIRA & MULTI-SCRAP) */
-        .scrap-row { display: flex; gap: 12px; align-items: flex-end; margin-bottom: 10px; background: #fff; padding: 10px 14px; border-radius: 6px; border: 1px solid #cbe0f5; flex-wrap: wrap; }
-        .scrap-row > div { flex: 1; min-width: 120px; }
+        /* STILOVI ZA TAB 5 I TAB 6 */
+        .scrap-row, .stanc-box-row { display: flex; gap: 12px; align-items: flex-end; margin-bottom: 10px; background: #fff; padding: 12px 14px; border-radius: 6px; border: 1px solid #cbe0f5; flex-wrap: wrap; }
+        .scrap-row > div, .stanc-box-row > div { flex: 1; min-width: 115px; }
         .btn-add-scrap { background: #2980b9; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13.5px; }
         .btn-add-scrap:hover { background: #1f618d; }
         .btn-remove-scrap { background: #e74c3c; color: white; border: none; padding: 9px 14px; border-radius: 5px; font-weight: bold; cursor: pointer; }
@@ -100,6 +100,7 @@
         <button class="tab-btn" onclick="switchTab('tab-miks', this)">3. Kombinovana Porudžbina</button>
         <button class="tab-btn" onclick="switchTab('tab-popup', this)">4. Pop-Up Kocke (25x15)</button>
         <button class="tab-btn" onclick="switchTab('tab-ostatak', this)">5. Ostatak Papira (Više komada & Miks)</button>
+        <button class="tab-btn" onclick="switchTab('tab-stanc-pdf', this)">6. Štanc PDF (Više kutija & Debljina)</button>
     </div>
 
     <!-- ZAJEDNIČKE MERE ZA TAB 1 I TAB 2 -->
@@ -425,11 +426,132 @@
         </div>
         <div id="results-ostatak"></div>
     </div>
+
+    <!-- TAB 6: ŠTANC PDF (VIŠE KUTIJA & VIŠE DEBLJINA STRANICA -> 1 ŠTANC = 1 PDF STRANA) -->
+    <div id="tab-stanc-pdf" class="tab-content">
+        <div class="color-section" style="background:#eef7fa; border-color:#b8daff;">
+            <h3>🖨️ Generator 1:1 Štanc PDF-a za Više Dimenzija Kutija i Više Debljina Stranica</h3>
+            <p style="margin-top:0; font-size:13.5px; color:#34495e;">
+                Unesi različite dimenzije kutija i jednu ili više debljina stranica za svaku kutiju (npr. <strong>0.2, 0.8</strong> za tanku stranicu i čokoladice). Alat generiše sve potrebne štanc šablone i pakuje ih u <strong>jedan zajednički 1:1 PDF fajl</strong> gde je <strong>svaki štanc na svojoj PDF strani</strong>.
+            </p>
+
+            <div id="stancBoxesList">
+                <!-- Kutija 1: Standardna -->
+                <div class="stanc-box-row">
+                    <div>
+                        <label>🏷️ Naziv kutije</label>
+                        <input type="text" class="st-name" value="Standardna kutija">
+                    </div>
+                    <div>
+                        <label>📐 Unete mere su za:</label>
+                        <select class="st-mode">
+                            <option value="baza_exact" selected>Spoljnu Bazu (fiksna Baza, Čep se menja sa debljinom)</option>
+                            <option value="cep_exact">Unutrašnji Čep (fiksan Čep, Baza se širi sa debljinom)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Širina W (cm)</label>
+                        <input type="number" class="st-w" value="11" step="0.1">
+                    </div>
+                    <div>
+                        <label>Dužina L (cm)</label>
+                        <input type="number" class="st-l" value="8" step="0.1">
+                    </div>
+                    <div>
+                        <label>Visina H (cm)</label>
+                        <input type="number" class="st-h" value="10" step="0.1">
+                    </div>
+                    <div>
+                        <label>Mehanizam</label>
+                        <select class="st-tip">
+                            <option value="kocke" selected>Samo Kocke</option>
+                            <option value="leptiri">Samo Leptiri</option>
+                            <option value="oba">Kocke + Leptiri</option>
+                        </select>
+                    </div>
+                    <div class="qty-highlight" style="min-width:170px;">
+                        <label>📏 Debljine stranica (cm, odvojene zarezom)</label>
+                        <input type="text" class="st-debs" value="0.2, 0.8" placeholder="npr. 0.2, 0.8">
+                    </div>
+                </div>
+
+                <!-- Kutija 2: Velika -->
+                <div class="stanc-box-row">
+                    <div>
+                        <label>🏷️ Naziv kutije</label>
+                        <input type="text" class="st-name" value="Velika kutija">
+                    </div>
+                    <div>
+                        <label>📐 Unete mere su za:</label>
+                        <select class="st-mode">
+                            <option value="baza_exact" selected>Spoljnu Bazu (fiksna Baza, Čep se menja sa debljinom)</option>
+                            <option value="cep_exact">Unutrašnji Čep (fiksan Čep, Baza se širi sa debljinom)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Širina W (cm)</label>
+                        <input type="number" class="st-w" value="15" step="0.1">
+                    </div>
+                    <div>
+                        <label>Dužina L (cm)</label>
+                        <input type="number" class="st-l" value="15" step="0.1">
+                    </div>
+                    <div>
+                        <label>Visina H (cm)</label>
+                        <input type="number" class="st-h" value="12" step="0.1">
+                    </div>
+                    <div>
+                        <label>Mehanizam</label>
+                        <select class="st-tip">
+                            <option value="oba" selected>Kocke + Leptiri</option>
+                            <option value="kocke">Samo Kocke</option>
+                            <option value="leptiri">Samo Leptiri</option>
+                        </select>
+                    </div>
+                    <div class="qty-highlight" style="min-width:170px;">
+                        <label>📏 Debljine stranica (cm, odvojene zarezom)</label>
+                        <input type="text" class="st-debs" value="0.2, 0.8" placeholder="npr. 0.2, 0.8">
+                    </div>
+                    <div style="flex:0 0 auto; min-width:auto;">
+                        <button type="button" class="btn-remove-scrap" onclick="this.closest('.stanc-box-row').remove()">✖ Ukloni</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <button type="button" class="btn-add-scrap" onclick="dodajRedStancKutije()">➕ Dodaj još jednu kutiju za štanc</button>
+            </div>
+
+            <div class="form-group" style="border-top: 1px solid #cbe0f5; padding-top: 12px;">
+                <div>
+                    <label>Rešenje kada kutija ima više debljina stranica (npr. 0.2 i 0.8 cm)</label>
+                    <select id="stancMultiDebMode">
+                        <option value="dupli_big_cep" selected>1. Dupli big na Čepu i Okviru čepa (1 zajednički štanc za Bazu, Poklopac i Čep sa duplim bigom)</option>
+                        <option value="odvojeno_bez_dupliranja">2. Odvojeni šabloni za svaku debljinu (bez dupliranja istih delova)</option>
+                        <option value="sve_posebno">3. Sve posebno (svaka kutija i svaka debljina stranice dobija pun spisak strana)</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Uključi šablon Pop-Up kocke (25×15 cm sa vodiljom od 2 mm) i bočne kvadrate</label>
+                    <select id="stancDodatniDelovi">
+                        <option value="sve" selected>Uključi sve (Baza, Poklopac, Čep, Okviri, Bočni kvadrati + Pop-Up Kocka 25×15)</option>
+                        <option value="glavni_plus_kocka">Samo glavni štanc alati (Baza, Poklopac, Čep, Okviri + Pop-Up Kocka 25×15)</option>
+                        <option value="samo_kutija">Samo delovi kutije (Baza, Poklopac, Čep, Okviri)</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="calc-btn" onclick="generisiStancVišeKutija()">⚙️ Izračunaj i Iscrtaj Sve Štanc Strane</button>
+            <button class="export-btn all-pdf" style="margin-bottom:0;" onclick="eksportujMultiStancPDF()">📥 Preuzmi JEDAN PDF sa svim štancovima (1 Štanc = 1 PDF Strana u razmeri 1:1 mm)</button>
+        </div>
+        <div id="results-stanc-pdf"></div>
+    </div>
 </div>
 
 <script>
 window.sabloniCache = {};
 window.tabaciCache = {};
+window.multiStancPages = [];
 
 function f(num) {
     return Number(num.toFixed(1)).toString().replace('.', ',');
@@ -446,6 +568,9 @@ function switchTab(tabId, btn) {
     }
     if (tabId === 'tab-ostatak' && document.getElementById('results-ostatak').innerHTML === '') {
         analizirajOstatakPapira();
+    }
+    if (tabId === 'tab-stanc-pdf' && document.getElementById('results-stanc-pdf').innerHTML === '') {
+        generisiStancVišeKutija();
     }
 }
 
@@ -492,6 +617,54 @@ function dodajRedOstatka() {
         </div>
         <div style="flex:0 0 auto; min-width:auto;">
             <button type="button" class="btn-remove-scrap" onclick="this.closest('.scrap-row').remove()">✖ Ukloni</button>
+        </div>
+    `;
+    list.appendChild(div);
+}
+
+function dodajRedStancKutije() {
+    let list = document.getElementById('stancBoxesList');
+    let count = list.querySelectorAll('.stanc-box-row').length + 1;
+    let div = document.createElement('div');
+    div.className = 'stanc-box-row';
+    div.innerHTML = `
+        <div>
+            <label>🏷️ Naziv kutije</label>
+            <input type="text" class="st-name" value="Kutija ${count}">
+        </div>
+        <div>
+            <label>📐 Unete mere su za:</label>
+            <select class="st-mode">
+                <option value="baza_exact" selected>Spoljnu Bazu (fiksna Baza, Čep se menja sa debljinom)</option>
+                <option value="cep_exact">Unutrašnji Čep (fiksan Čep, Baza se širi sa debljinom)</option>
+            </select>
+        </div>
+        <div>
+            <label>Širina W (cm)</label>
+            <input type="number" class="st-w" value="12" step="0.1">
+        </div>
+        <div>
+            <label>Dužina L (cm)</label>
+            <input type="number" class="st-l" value="10" step="0.1">
+        </div>
+        <div>
+            <label>Visina H (cm)</label>
+            <input type="number" class="st-h" value="10" step="0.1">
+        </div>
+        <div>
+            <label>Mehanizam</label>
+            <select class="st-tip">
+                <option value="kocke" selected>Samo Kocke</option>
+                <option value="leptiri">Samo Leptiri</option>
+                <option value="oba">Kocke + Leptiri</option>
+            </select>
+        </div>
+        <div class="qty-highlight" style="min-width:170px;">
+            <label>📏 Debljine stranica (cm, odvojene zarezom)</label>
+            <input type="text" class="st-debs" value="0.2, 0.8" placeholder="npr. 0.2, 0.8">
+        </div>
+        <div style="flex:0 0 auto; min-width:auto;">
+            <button type="button" class="btn-remove-scrap" onclick="this.closest('.stanc-box-row').remove()">✖ Ukloni</button>
         </div>
     `;
     list.appendChild(div);
@@ -570,46 +743,78 @@ function dobijMereZaTip(tipOverride) {
 }
 
 // =========================================================================
-// POMOĆNA FUNKCIJA ZA KUKICU (RUPICA SA VODILJOM) NA CRVENIM KLAPNAMA KOCKE
+// POMOĆNA FUNKCIJA ZA KUKICU SA OTVORENOM VODILJOM ŠIRINE 2 MM (0.20 CM)
+// ISTA MALA RUPA (r = 0.18 cm / prečnik 3.6 mm) + VODILJA ŠIRINE 2.0 MM
 // =========================================================================
-function napraviKukicuSaVodiljom(xSlit, yBottom, cy, r, smerKaBigu) {
-    // Vertikalna vodilja ide sa donje kose V-ivice (xSlit, yBottom) pravo nagore do (xSlit, cy),
-    // a zatim prelazi u kružnu rupicu (centar cx = xSlit + smerKaBigu * r, cy)
-    // koja je povijena ka liniji biga i pravi "ofinger/kukicu" ispod rupice.
-    let cx = xSlit + smerKaBigu * r;
-    let pts = [
-        [xSlit, yBottom],
-        [xSlit, cy]
-    ];
+function napraviKukicuSaVodiljom2mm(xFold, side, cy, r, vodiljaW) {
+    // side = -1 (levo od biga xFold) ili +1 (desno od biga xFold)
+    // Udaljenost centra rupe od biga je 0.50 cm (5 mm):
+    let distCenter = 0.50;
+    let cx = xFold + side * distCenter;
+
+    // Spoljni zid vodilje ide tangencijalno na spoljnu ivicu kružne rupe (udaljenost 0.68 cm od biga),
+    // a unutrašnji zid vodilje je pomeren za tačno vodiljaW = 0.20 cm (2 mm) ka bigu (udaljenost 0.48 cm od biga).
+    // Kružna rupa (r = 0.18 cm) se širi ka bigu sve do 0.32 cm od biga, praveći kukicu od 1.6 mm ispod rupe!
+    let xOut = cx + side * r;               // 0.68 cm od biga
+    let xIn  = xOut - side * vodiljaW;      // 0.48 cm od biga (širina vodilje = 0.20 cm = 2 mm)
+
+    // Donja kosa V-ivica ima jednačinu y = 9.0 + |x - xFold|
+    let yBottomOut = 9.0 + Math.abs(xOut - xFold);
+    let yBottomIn  = 9.0 + Math.abs(xIn - xFold);
+
+    // Tačka gde unutrašnji zid vodilje (xIn) ulazi u donji deo kruga (cx, cy, r):
+    let dxIn = xIn - cx; // za r=0.18 i vodiljaW=0.20, dxIn = -side * 0.02 cm
+    let dyIn = Math.sqrt(Math.max(0, r * r - dxIn * dxIn));
+
+    let startAngle = (side === -1) ? Math.PI : 0;
+    let endAngle = Math.atan2(-dyIn, dxIn); // donji unutrašnji spoj sa krugom
+
+    let pts = [];
+    // 1. Od donje kose V-ivice po spoljnjem zidu vodilje pravo nagore do ulaza u krug (xOut, cy)
+    pts.push([Number(xOut.toFixed(3)), Number(yBottomOut.toFixed(3))]);
+    pts.push([Number(xOut.toFixed(3)), Number(cy.toFixed(3))]);
+
+    // 2. Luk kružne rupe (r = 0.18 cm) preko vrha i unutrašnje kukice sve do unutrašnjeg zida vodilje (xIn)
     let koraci = 18;
-    if (smerKaBigu > 0) {
-        // Krug ide od ugla PI (levo na xSlit), preko vrha (PI/2), desno ka bigu (0), dole ispod (-PI/2) nazad do PI
+    let totalSweep;
+    if (side === -1) {
+        // Kretanje u smeru kazaljke na satu (smanjenje ugla u standardnom matematičkom sistemu):
+        // od PI (levo), preko PI/2 (gore), 0 (desno ka bigu), do endAngle (~ -PI/2)
+        totalSweep = startAngle - endAngle;
         for (let i = 1; i <= koraci; i++) {
-            let ugao = Math.PI - (i / koraci) * 2 * Math.PI;
+            let a = startAngle - (i / koraci) * totalSweep;
             pts.push([
-                Number((cx + r * Math.cos(ugao)).toFixed(3)),
-                Number((cy - r * Math.sin(ugao)).toFixed(3))
+                Number((cx + r * Math.cos(a)).toFixed(3)),
+                Number((cy - r * Math.sin(a)).toFixed(3))
             ]);
         }
     } else {
-        // Krug ide od ugla 0 (desno na xSlit), preko vrha (PI/2), levo ka bigu (PI), dole ispod (3*PI/2) nazad do 2*PI
+        // Kretanje u smeru suprotnom od kazaljke na satu:
+        // od 0 (desno), preko PI/2 (gore), PI (levo ka bigu), do 2*PI + endAngle (~ 3*PI/2)
+        let targetAngle = endAngle < 0 ? endAngle + 2 * Math.PI : endAngle;
+        totalSweep = targetAngle - startAngle;
         for (let i = 1; i <= koraci; i++) {
-            let ugao = (i / koraci) * 2 * Math.PI;
+            let a = startAngle + (i / koraci) * totalSweep;
             pts.push([
-                Number((cx + r * Math.cos(ugao)).toFixed(3)),
-                Number((cy - r * Math.sin(ugao)).toFixed(3))
+                Number((cx + r * Math.cos(a)).toFixed(3)),
+                Number((cy - r * Math.sin(a)).toFixed(3))
             ]);
         }
     }
+
+    // 3. Od izlaza iz kruga po unutrašnjem zidu vodilje (razmak 2 mm) pravo nadole do kose V-ivice
+    pts.push([Number(xIn.toFixed(3)), Number(yBottomIn.toFixed(3))]);
     return pts;
 }
 
 // =========================================================================
 // GENERATOR VEKTORSKE GEOMETRIJE (ZA EKRAN, NESTING I 1:1 ŠTAMPARSKI PDF)
+// PODRŽAVA I DUPLI/VIŠESTRUKI BIG NA ČEPU I OKVIRU ČEPA
 // =========================================================================
 function dobijGeometrijuSablona(shapeType, p) {
     let cuts = [];
     let folds = [];
+    let extraFolds = []; // Dodatni (dupli) bigovi za drugu/treću debljinu stranice
     let bbW = 0, bbH = 0;
 
     if (shapeType === 'baza') {
@@ -629,24 +834,52 @@ function dobijGeometrijuSablona(shapeType, p) {
         folds.push([[0,h],[bbW,h]], [[0,h+l],[bbW,h+l]], [[h,h],[h,h+l]], [[h+w,h],[h+w,h+l]]);
     }
     else if (shapeType === 'cep') {
-        // REVIDIRAN ČIST KVADRATNI/PRAVOUGAONI ŠABLON ČEPA:
-        // Spoljni oblik je pun pravougaonik/kvadrat (2h + w) x (2h + l) bez odsecanja uglova.
-        // U sva 4 ugla su puni jezičci dimenzija h x h koji se preklapaju preko bočnih stranica (l) i dupliraju ih!
-        let { w, l, h } = p;
+        // ČIST KVADRATNI/PRAVOUGAONI ŠABLON ČEPA SA PODRŠKOM ZA DUPLI BIG (extraDeltas)
+        let { w, l, h, extraDeltas } = p;
         bbW = 2*h + w; bbH = 2*h + l;
+        let maxD = (extraDeltas && extraDeltas.length > 0) ? Math.max(...extraDeltas) : 0;
+
         cuts.push([[0,0], [bbW,0], [bbW,bbH], [0,bbH], [0,0]]);
-        // 4 ravna horizontalna reza u uglovima (na y = h i y = h + l) koji oslobađaju 4 puna jezička h x h:
-        cuts.push([[0,h],[h,h]], [[h+w,h],[bbW,h]], [[0,h+l],[h,h+l]], [[h+w,h+l],[bbW,h+l]]);
-        // Linije bigovanja: 2 vertikalne pune linije (od 0 do bbH) i 2 horizontalne centralne linije (od h do h+w):
+        // 4 ravna horizontalna reza u uglovima (produžena za maxD ako postoji unutrašnji dupli big)
+        cuts.push([[0,h],[h+maxD,h]], [[h+w-maxD,h],[bbW,h]], [[0,h+l],[h+maxD,h+l]], [[h+w-maxD,h+l],[bbW,h+l]]);
+        // Osnovne linije bigovanja
         folds.push([[h,0],[h,bbH]], [[h+w,0],[h+w,bbH]], [[h,h],[h+w,h]], [[h,h+l],[h+w,h+l]]);
+
+        // Ako čep ima dupli/višestruki big za deblje stranice (npr. čokoladice):
+        if (extraDeltas && extraDeltas.length > 0) {
+            extraDeltas.forEach(d => {
+                if (d > 0.01 && 2*d < w && 2*d < l) {
+                    // Unutrašnji bigovi oko centralne ploče čepa (pomereni ka unutra za d)
+                    extraFolds.push([[h+d, 0], [h+d, bbH]]);
+                    extraFolds.push([[h+w-d, 0], [h+w-d, bbH]]);
+                    extraFolds.push([[0, h+d], [bbW, h+d]]);
+                    extraFolds.push([[0, h+l-d], [bbW, h+l-d]]);
+                    // Kompenzacioni bigovi na spoljnim rubovima (na udaljenosti d od spoljne ivice da visina čepa ostane ista h)
+                    extraFolds.push([[d, h], [d, h+l]]);
+                    extraFolds.push([[bbW-d, h], [bbW-d, h+l]]);
+                    extraFolds.push([[h, d], [h+w, d]]);
+                    extraFolds.push([[h, bbH-d], [h+w, bbH-d]]);
+                }
+            });
+        }
     }
     else if (shapeType === 'traka') {
-        let { w, l, hKlapna, hZid } = p;
+        let { w, l, hKlapna, hZid, extraVariants } = p;
         let p1 = w, p2 = w + l, p3 = 2*w + l, p4 = 2*w + 2*l;
         bbW = p4 + 1.0; bbH = hZid + hKlapna;
         cuts.push([[0,0], [bbW,0], [bbW,bbH], [0,bbH], [0,0]]);
         cuts.push([[p1,hZid],[p1,bbH]], [[p2,hZid],[p2,bbH]], [[p3,hZid],[p3,bbH]], [[p4,hZid],[p4,bbH]]);
         folds.push([[0,hZid],[bbW,hZid]], [[p1,0],[p1,hZid]], [[p2,0],[p2,hZid]], [[p3,0],[p3,hZid]], [[p4,0],[p4,hZid]]);
+
+        // Dodatni poprečni bigovi na traci Okvira čepa za manje čepove (veće debljine stranice)
+        if (extraVariants && extraVariants.length > 0) {
+            extraVariants.forEach(ev => {
+                let q1 = ev.w, q2 = ev.w + ev.l, q3 = 2*ev.w + ev.l, q4 = 2*ev.w + 2*ev.l;
+                if (Math.abs(q1 - p1) > 0.01) {
+                    extraFolds.push([[q1,0],[q1,bbH]], [[q2,0],[q2,bbH]], [[q3,0],[q3,bbH]], [[q4,0],[q4,bbH]]);
+                }
+            });
+        }
     }
     else if (shapeType === 'rect') {
         let { w, h } = p;
@@ -662,18 +895,14 @@ function dobijGeometrijuSablona(shapeType, p) {
             [17,15], [12,10], [7,15], [6,14], [6,11], [7,10], [6,9], [5,10], [0,10], [0,5]
         ]);
 
-        // KUKICE (RUPICE SA VODILJOM) U OBE CRVENE OBLASTI KOJE SE POKLOPE KADA SE SAVIJE BIG:
-        // 1. Leva crvena oblast (x = 5..7, big je na x = 6):
-        //    Leva i desna vodilja kreću sa donje V-ivice (y = 9.60) na x = 5.40 i x = 6.60,
-        //    idu nagore do y = 7.50 i prave kružne rupice (r = 0.18 cm) povijene ka bigu x = 6.
-        cuts.push(napraviKukicuSaVodiljom(5.40, 9.60, 7.50, 0.18, +1));
-        cuts.push(napraviKukicuSaVodiljom(6.60, 9.60, 7.50, 0.18, -1));
+        // KUKICE SA VODILJOM ŠIRINE TAČNO 2 MM (0.20 CM) I ISTOM MALOM RUPOM (r = 0.18 CM):
+        // 1. Leva crvena oblast (oko biga x = 6.0 cm)
+        cuts.push(napraviKukicuSaVodiljom2mm(6.0, -1, 7.50, 0.18, 0.20));
+        cuts.push(napraviKukicuSaVodiljom2mm(6.0, +1, 7.50, 0.18, 0.20));
 
-        // 2. Desna crvena oblast (x = 17..19, big je na x = 18):
-        //    Leva i desna vodilja kreću sa donje V-ivice (y = 9.60) na x = 17.40 i x = 18.60,
-        //    idu nagore do y = 7.50 i prave kružne rupice (r = 0.18 cm) povijene ka bigu x = 18.
-        cuts.push(napraviKukicuSaVodiljom(17.40, 9.60, 7.50, 0.18, +1));
-        cuts.push(napraviKukicuSaVodiljom(18.60, 9.60, 7.50, 0.18, -1));
+        // 2. Desna crvena oblast (oko biga x = 18.0 cm)
+        cuts.push(napraviKukicuSaVodiljom2mm(18.0, -1, 7.50, 0.18, 0.20));
+        cuts.push(napraviKukicuSaVodiljom2mm(18.0, +1, 7.50, 0.18, 0.20));
 
         folds.push(
             [[5,5],[5,10]], [[6,6],[6,9]], [[7,0],[7,15]], [[12,5],[12,10]], [[17,0],[17,15]],
@@ -682,7 +911,7 @@ function dobijGeometrijuSablona(shapeType, p) {
         );
     }
 
-    return { cuts, folds, bbW, bbH };
+    return { cuts, folds, extraFolds, bbW, bbH };
 }
 
 function transformisiTacku(pt, xOff, yOff, rotated, origH) {
@@ -694,8 +923,16 @@ function transformisiTacku(pt, xOff, yOff, rotated, origH) {
 // =========================================================================
 // EKSPORT U 1:1 VEKTORSKI PDF I SVG ZA ŠTAMPARIJU
 // =========================================================================
-function nacrtajSablonNaStraniciPDF(doc, shapeType, params, marginMm = 10) {
+function nacrtajSablonNaStraniciPDF(doc, shapeType, params, marginMm = 10, headerTitle = "") {
     let geom = dobijGeometrijuSablona(shapeType, params);
+
+    if (headerTitle) {
+        doc.setFontSize(8.5);
+        doc.setTextColor(60, 60, 60);
+        doc.text(`${headerTitle} | Gabarit: ${f(geom.bbW)} x ${f(geom.bbH)} cm (${f(geom.bbW*10)} x ${f(geom.bbH*10)} mm) | Razmera 1:1`, marginMm, 6);
+    }
+
+    // Crvene linije reza (štanc nož)
     doc.setDrawColor(220, 0, 0);
     doc.setLineWidth(0.25);
     doc.setLineDashPattern([], 0);
@@ -708,6 +945,7 @@ function nacrtajSablonNaStraniciPDF(doc, shapeType, params, marginMm = 10) {
         }
     });
 
+    // Plave isprekidane linije osnovnog bigovanja
     doc.setDrawColor(0, 80, 220);
     doc.setLineWidth(0.25);
     doc.setLineDashPattern([2, 2], 0);
@@ -717,6 +955,19 @@ function nacrtajSablonNaStraniciPDF(doc, shapeType, params, marginMm = 10) {
             marginMm + seg[1][0] * 10, marginMm + seg[1][1] * 10
         );
     });
+
+    // Ljubičasto-plave linije duplog biga (ako postoje za drugu debljinu stranice)
+    if (geom.extraFolds && geom.extraFolds.length > 0) {
+        doc.setDrawColor(142, 68, 173);
+        doc.setLineWidth(0.25);
+        doc.setLineDashPattern([1.2, 1.5], 0);
+        geom.extraFolds.forEach(seg => {
+            doc.line(
+                marginMm + seg[0][0] * 10, marginMm + seg[0][1] * 10,
+                marginMm + seg[1][0] * 10, marginMm + seg[1][1] * 10
+            );
+        });
+    }
 }
 
 function eksportujSablonPDF(key) {
@@ -730,7 +981,7 @@ function eksportujSablonPDF(key) {
     let orient = pageW >= pageH ? 'l' : 'p';
 
     const doc = new jsPDF({ orientation: orient, unit: 'mm', format: [pageW, pageH] });
-    nacrtajSablonNaStraniciPDF(doc, item.shapeType, item.params, marginMm);
+    nacrtajSablonNaStraniciPDF(doc, item.shapeType, item.params, marginMm, item.title || item.cleanFileName);
     doc.save(`${item.cleanFileName}_${f(geom.bbW)}x${f(geom.bbH)}cm_1na1.pdf`);
 }
 
@@ -751,6 +1002,11 @@ function eksportujSablonSVG(key) {
     geom.folds.forEach(seg => {
         svg += `  <line x1="${seg[0][0].toFixed(3)}" y1="${seg[0][1].toFixed(3)}" x2="${seg[1][0].toFixed(3)}" y2="${seg[1][1].toFixed(3)}" stroke="#0000ff" stroke-width="0.03" stroke-dasharray="0.2,0.2" />\n`;
     });
+    if (geom.extraFolds && geom.extraFolds.length > 0) {
+        geom.extraFolds.forEach(seg => {
+            svg += `  <line x1="${seg[0][0].toFixed(3)}" y1="${seg[0][1].toFixed(3)}" x2="${seg[1][0].toFixed(3)}" y2="${seg[1][1].toFixed(3)}" stroke="#8e44ad" stroke-width="0.03" stroke-dasharray="0.15,0.15" />\n`;
+        });
+    }
     svg += `</svg>`;
 
     let blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
@@ -779,7 +1035,7 @@ function eksportujSveSablonePDF() {
         } else {
             doc.addPage([pageW, pageH], orient);
         }
-        nacrtajSablonNaStraniciPDF(doc, item.shapeType, item.params, marginMm);
+        nacrtajSablonNaStraniciPDF(doc, item.shapeType, item.params, marginMm, item.title || item.cleanFileName);
     });
 
     doc.save(`BumBox_Svi_Sabloni_1na1_Za_Stampariju.pdf`);
@@ -821,18 +1077,19 @@ function eksportujTabakPDF(binKey) {
 }
 
 // =========================================================================
-// ISCRTAVANJE ŠABLONA NA EKRANU (TAB 1)
+// ISCRTAVANJE ŠABLONA NA EKRANU (TAB 1 I TAB 6)
 // =========================================================================
-function generisiSVG(key, naslov, w, l, h, type, cleanFileName) {
+function generisiSVG(key, naslov, w, l, h, type, cleanFileName, extraDeltas = []) {
     let bbW = 2*h + w;
     let bbL = 2*h + l;
 
-    window.sabloniCache[key] = { shapeType: type, params: { w, l, h }, cleanFileName };
+    window.sabloniCache[key] = { shapeType: type, params: { w, l, h, extraDeltas }, cleanFileName, title: naslov };
 
     let svgStr = `<svg viewBox="-4 -4 ${bbW + 8} ${bbL + 8}" xmlns="http://www.w3.org/2000/svg">`;
     svgStr += `<style>
         .cut { stroke: red; stroke-width: 0.15; fill: none; }
         .fold { stroke: blue; stroke-width: 0.15; stroke-dasharray: 1, 1.5; fill: none; }
+        .extra-fold { stroke: #8e44ad; stroke-width: 0.15; stroke-dasharray: 0.6, 0.8; fill: none; }
         .dim { font-size: ${(bbW/30).toFixed(1)}px; font-family: monospace; fill: #333; font-weight: bold; }
         .center-text { font-size: ${(bbW/20).toFixed(1)}px; font-weight: bold; fill: #222; }
         .bg-center { fill: #ebf5fb; } .bg-wall { fill: #fffdf0; } .bg-tab { fill: #f5b7b1; }
@@ -845,7 +1102,6 @@ function generisiSVG(key, naslov, w, l, h, type, cleanFileName) {
                <rect x="${h}" y="${h+l}" width="${w}" height="${h}" class="bg-wall" />`;
 
     if (type === 'poklopac' || type === 'cep') {
-        // Puni ugaoni jezičci h x h u sva 4 ugla (čist spoljni kvadrat/pravougaonik)
         svgStr += `<rect x="0" y="0" width="${h}" height="${h}" class="bg-tab" />
                    <rect x="${h+w}" y="0" width="${h}" height="${h}" class="bg-tab" />
                    <rect x="0" y="${h+l}" width="${h}" height="${h}" class="bg-tab" />
@@ -857,7 +1113,7 @@ function generisiSVG(key, naslov, w, l, h, type, cleanFileName) {
     let ptsX = [0, h, h+w, bbW];
     let ptsY = [0, h, h+l, bbL];
 
-    let geom = dobijGeometrijuSablona(type, { w, l, h });
+    let geom = dobijGeometrijuSablona(type, { w, l, h, extraDeltas });
     geom.cuts.forEach(poly => {
         let d = poly.map((pt, idx) => `${idx===0?'M':'L'} ${pt[0]},${pt[1]}`).join(' ');
         svgStr += `<path d="${d}" class="cut" />`;
@@ -865,6 +1121,11 @@ function generisiSVG(key, naslov, w, l, h, type, cleanFileName) {
     geom.folds.forEach(seg => {
         svgStr += `<line x1="${seg[0][0]}" y1="${seg[0][1]}" x2="${seg[1][0]}" y2="${seg[1][1]}" class="fold" />`;
     });
+    if (geom.extraFolds && geom.extraFolds.length > 0) {
+        geom.extraFolds.forEach(seg => {
+            svgStr += `<line x1="${seg[0][0]}" y1="${seg[0][1]}" x2="${seg[1][0]}" y2="${seg[1][1]}" class="extra-fold" />`;
+        });
+    }
 
     ptsX.forEach(p => {
         svgStr += `<text x="${p}" y="-1.0" text-anchor="middle" class="dim">${f(p)}</text>`;
@@ -876,6 +1137,9 @@ function generisiSVG(key, naslov, w, l, h, type, cleanFileName) {
     svgStr += `</svg>`;
     let txt = `X-osa: ` + ptsX.map(p => f(p)).join(" -> ") + ` cm\n`;
     txt += `Y-osa: ` + ptsY.map(p => f(p)).join(" -> ") + ` cm\n`;
+    if (extraDeltas && extraDeltas.length > 0) {
+        txt += `Ljubičasti dupli bigovi (pomeraj ka unutra za deblje stranice): ` + extraDeltas.map(d => `${f(d)} cm (${f(d*10)} mm)`).join(", ") + `\n`;
+    }
 
     return `<div class="component">
         <div class="component-header">
@@ -890,20 +1154,29 @@ function generisiSVG(key, naslov, w, l, h, type, cleanFileName) {
     </div>`;
 }
 
-function generisiTraku(key, naslov, w, l, hKlapna, hZid, cleanFileName) {
+function generisiTraku(key, naslov, w, l, hKlapna, hZid, cleanFileName, extraVariants = []) {
     let totalW = w + l + w + l + 1.0;
     let totalH = hKlapna + hZid;
     let p1 = w, p2 = w + l, p3 = w + l + w, p4 = w + l + w + l;
     
-    window.sabloniCache[key] = { shapeType: 'traka', params: { w, l, hKlapna, hZid }, cleanFileName };
+    window.sabloniCache[key] = { shapeType: 'traka', params: { w, l, hKlapna, hZid, extraVariants }, cleanFileName, title: naslov };
 
     let txt = `X-osa: 0 -> ${f(p1)} -> ${f(p2)} -> ${f(p3)} -> ${f(p4)} -> ${f(totalW)} cm\n`;
     txt += `Y-osa: 0 -> ${f(hKlapna)} (klapna) -> ${f(totalH)} cm (ukupna visina sa zidom od ${f(hZid)} cm)\n`;
+    if (extraVariants && extraVariants.length > 0) {
+        extraVariants.forEach(ev => {
+            let q1 = ev.w, q2 = ev.w + ev.l, q3 = 2*ev.w + ev.l, q4 = 2*ev.w + 2*ev.l;
+            txt += `Dupli big (za debljinu ${f(ev.deb)} cm): 0 -> ${f(q1)} -> ${f(q2)} -> ${f(q3)} -> ${f(q4)} cm\n`;
+        });
+    }
+
+    let geom = dobijGeometrijuSablona('traka', { w, l, hKlapna, hZid, extraVariants });
 
     let svg = `<svg viewBox="-4 -3 ${totalW + 6} ${totalH + 6}" xmlns="http://www.w3.org/2000/svg">
         <style>
             .cut { fill: none; stroke: red; stroke-width: 0.15; }
             .fold { stroke: blue; stroke-width: 0.15; stroke-dasharray: 1, 1.5; fill: none; }
+            .extra-fold { stroke: #8e44ad; stroke-width: 0.15; stroke-dasharray: 0.6, 0.8; fill: none; }
             .dim { font-size: ${(totalW/35).toFixed(1)}px; font-family: monospace; fill: #333; font-weight: bold;}
             .bg-wall { fill: #fffdf0; } .bg-tab { fill: #f5b7b1; }
         </style>
@@ -922,6 +1195,7 @@ function generisiTraku(key, naslov, w, l, hKlapna, hZid, cleanFileName) {
         <line x1="${p2}" y1="0" x2="${p2}" y2="${hZid}" class="fold" />
         <line x1="${p3}" y1="0" x2="${p3}" y2="${hZid}" class="fold" />
         <line x1="${p4}" y1="0" x2="${p4}" y2="${hZid}" class="fold" />
+        ${(geom.extraFolds || []).map(seg => `<line x1="${seg[0][0]}" y1="${seg[0][1]}" x2="${seg[1][0]}" y2="${seg[1][1]}" class="extra-fold" />`).join('\n        ')}
         
         <text x="${p1/2}" y="${hZid/2}" text-anchor="middle" dominant-baseline="middle" class="dim">${f(w)}x${f(hZid)}</text>
         <text x="${p1 + l/2}" y="${hZid/2}" text-anchor="middle" dominant-baseline="middle" class="dim">${f(l)}x${f(hZid)}</text>
@@ -945,13 +1219,16 @@ function generisiTraku(key, naslov, w, l, hKlapna, hZid, cleanFileName) {
     </div>`;
 }
 
-function generisiDekoraciju(boxW, boxL, boxH) {
+function generisiDekoraciju(boxW, boxL, boxH, keyPrefix = "dekor", titlePrefix = "6.") {
     let p = 0.93;
     let prednjiW = boxW * p, prednjiH = boxH * p;
     let bocniW = boxL * p, bocniH = boxH * p;
 
-    window.sabloniCache['dekor_prednji'] = { shapeType: 'rect', params: { w: prednjiW, h: prednjiH }, cleanFileName: '6a_Dekor_Prednji_Zadnji' };
-    window.sabloniCache['dekor_bocni'] = { shapeType: 'rect', params: { w: bocniW, h: bocniH }, cleanFileName: '6b_Dekor_Bocni' };
+    let kPred = `${keyPrefix}_prednji`;
+    let kBoc = `${keyPrefix}_bocni`;
+
+    window.sabloniCache[kPred] = { shapeType: 'rect', params: { w: prednjiW, h: prednjiH }, cleanFileName: `${kPred}_Dekor_Prednji_Zadnji`, title: `${titlePrefix} Dekor Prednji/Zadnji (${f(prednjiW)}x${f(prednjiH)} cm)` };
+    window.sabloniCache[kBoc] = { shapeType: 'rect', params: { w: bocniW, h: bocniH }, cleanFileName: `${kBoc}_Dekor_Bocni`, title: `${titlePrefix} Dekor Bočni (${f(bocniW)}x${f(bocniH)} cm)` };
 
     let maxW = (prednjiW * 2) + (bocniW * 2) + 8;
     let maxH = prednjiH + 4;
@@ -982,10 +1259,10 @@ function generisiDekoraciju(boxW, boxL, boxH) {
 
     return `<div class="component">
         <div class="component-header">
-            <h2>6. Dekorativni Paneli (Samo 4 bočna zida)</h2>
+            <h2>${titlePrefix} Dekorativni Paneli (Samo 4 bočna zida)</h2>
             <div class="btn-toolbar" style="margin:0;">
-                <button class="export-btn pdf" onclick="eksportujSablonPDF('dekor_prednji')">📄 PDF Prednji/Zadnji (${f(prednjiW*10)}x${f(prednjiH*10)} mm)</button>
-                <button class="export-btn pdf" onclick="eksportujSablonPDF('dekor_bocni')">📄 PDF Bočni (${f(bocniW*10)}x${f(bocniH*10)} mm)</button>
+                <button class="export-btn pdf" onclick="eksportujSablonPDF('${kPred}')">📄 PDF Prednji/Zadnji (${f(prednjiW*10)}x${f(prednjiH*10)} mm)</button>
+                <button class="export-btn pdf" onclick="eksportujSablonPDF('${kBoc}')">📄 PDF Bočni (${f(bocniW*10)}x${f(bocniH*10)} mm)</button>
             </div>
         </div>
         <div class="text-measures">Lepe se na 4 bočne stranice baze (bez dna i poklopca). Umanjeni na 93% površine stranice.</div>
@@ -1447,9 +1724,9 @@ function generisiMiksMaterijal() {
     document.getElementById('results-miks').innerHTML = html;
 }
 
-// --- TAB 4: POP-UP KOCKE (25 x 15 cm SA KUKICAMA / RUPICAMA I VODILJAMA U CRVENOJ OBLASTI) ---
-function generisiPopUpSablonSVG() {
-    window.sabloniCache['popup_kocka'] = { shapeType: 'popup', params: {}, cleanFileName: 'PopUp_Kocka_25x15cm' };
+// --- TAB 4: POP-UP KOCKE (25 x 15 cm SA KUKICAMA I VODILJOM ŠIRINE 2 MM) ---
+function generisiPopUpSablonSVG(customKey = 'popup_kocka', customTitle = 'Šablon: Pop-Up Kocka (25 x 15 cm / 250 x 150 mm) — Rupa Ø3,6mm + Vodilja 2mm') {
+    window.sabloniCache[customKey] = { shapeType: 'popup', params: {}, cleanFileName: 'PopUp_Kocka_25x15cm_Vodilja2mm', title: customTitle };
 
     let ptsX = [0, 5, 6, 7, 12, 17, 18, 19, 24, 25];
     let ptsY = [0, 5, 10, 15];
@@ -1458,7 +1735,7 @@ function generisiPopUpSablonSVG() {
     let svg = `<svg viewBox="-3 -3 31 20" xmlns="http://www.w3.org/2000/svg">
         <style>
             .cut { stroke: red; stroke-width: 0.15; fill: none; }
-            .hook { stroke: #d32f2f; stroke-width: 0.14; fill: rgba(231, 76, 60, 0.25); stroke-linecap: round; stroke-linejoin: round; }
+            .hook { stroke: #d32f2f; stroke-width: 0.14; fill: #ffffff; stroke-linecap: round; stroke-linejoin: round; }
             .fold { stroke: blue; stroke-width: 0.15; stroke-dasharray: 0.7, 0.9; fill: none; }
             .dim { font-size: 0.85px; font-family: monospace; fill: #333; font-weight: bold; }
             .bg-center { fill: #ebf5fb; }
@@ -1497,13 +1774,13 @@ function generisiPopUpSablonSVG() {
 
     return `<div class="component">
         <div class="component-header">
-            <h2>Šablon: Pop-Up Kocka (25 x 15 cm / 250 x 150 mm) sa kukicama (rupice + vodilje) za gumicu</h2>
+            <h2>${customTitle}</h2>
             <div class="btn-toolbar" style="margin:0;">
-                <button class="export-btn pdf" onclick="eksportujSablonPDF('popup_kocka')">📄 1:1 PDF za štampariju (250x150 mm)</button>
-                <button class="export-btn" onclick="eksportujSablonSVG('popup_kocka')">📐 1:1 SVG Vektor</button>
+                <button class="export-btn pdf" onclick="eksportujSablonPDF('${customKey}')">📄 1:1 PDF za štampariju (250x150 mm)</button>
+                <button class="export-btn" onclick="eksportujSablonSVG('${customKey}')">📐 1:1 SVG Vektor</button>
             </div>
         </div>
-        <div class="text-measures"><strong>Gabarit jedne kocke:</strong> 25 x 15 cm\n<strong>Mehanizam za gumicu:</strong> U obe crvene oblasti (oko bigova na 6 cm i 18 cm) nalaze se simetrične kružne rupice sa vertikalnim vodiljama sa donje V-ivice koje se 100% poklope kada se big savije.</div>
+        <div class="text-measures"><strong>Gabarit jedne kocke:</strong> 25 x 15 cm\n<strong>Mehanizam za gumicu:</strong> Rupa ostaje ista (Ø 3,6 mm, r = 0,18 cm), a vodilja od donje kose V-ivice do rupe je otvoreni kanal širine tačno <strong>2 mm (0,20 cm)</strong>. Kada se big (6 cm i 18 cm) savije, vodilje od 2 mm i rupice se 100% poklope.</div>
         <div class="svg-container">${svg}</div>
     </div>`;
 }
@@ -2275,6 +2552,284 @@ function analizirajOstatakPapira() {
     });
 
     document.getElementById('results-ostatak').innerHTML = html;
+}
+
+// =========================================================================
+// TAB 6: ŠTANC PDF GENERATOR ZA VIŠE KUTIJA I VIŠE DEBLJINA STRANICA
+// (SVAKI ŠTANC NA SVOJOJ 1:1 PDF STRANI)
+// =========================================================================
+function izracunajMereZaStancRed(mode, w, l, h, deb, tip) {
+    let okvZid = (tip === 'leptiri' || tip === 'oba') ? 5.0 : 3.0;
+    if (mode === 'baza_exact') {
+        // Fiksna spoljna Baza (w x l x h), a Čep se smanjuje kada raste debljina stranice (deb)
+        let boxW = w, boxL = l, boxH = h;
+        let pokW = boxW + 0.4, pokL = boxL + 0.4, pokH = 3.0;
+        let cepH = (tip === 'kocke') ? Math.max(4.0, boxH - 3.0) : Math.max(4.0, boxH - 1.0);
+        let cepW = Math.max(3.0, boxW - 2 * deb);
+        let cepL = Math.max(3.0, boxL - 2 * deb);
+        return { boxW, boxL, boxH, pokW, pokL, pokH, cepW, cepL, cepH, okvirCepaZid: okvZid, tip, deb };
+    } else {
+        // Fiksan Čep (w x l x h), a Baza i Poklopac se šire kada raste debljina stranice (deb)
+        let m = izracunajDimenzijeKutije(w, l, h, deb, tip, 13.5, 11.0);
+        m.deb = deb;
+        return m;
+    }
+}
+
+function generisiStancVišeKutija() {
+    window.multiStancPages = [];
+    let multiMode = document.getElementById('stancMultiDebMode').value;
+    let dodatniMode = document.getElementById('stancDodatniDelovi').value;
+    let rows = document.querySelectorAll('#stancBoxesList .stanc-box-row');
+
+    let html = "";
+    let pageCounter = 0;
+    let seenSignatures = new Set();
+    let trebaOkvirKocke = false;
+
+    function dodajStranuAkoNijeDuplikat(sig, renderFn, key) {
+        if (multiMode === 'odvojeno_bez_dupliranja' && seenSignatures.has(sig)) {
+            return "";
+        }
+        seenSignatures.add(sig);
+        pageCounter++;
+        let blockHtml = renderFn(pageCounter, key);
+        window.multiStancPages.push(key);
+        return blockHtml;
+    }
+
+    rows.forEach((r, bIdx) => {
+        let name = r.querySelector('.st-name')?.value || `Kutija ${bIdx+1}`;
+        let mode = r.querySelector('.st-mode')?.value || 'baza_exact';
+        let w = parseFloat(r.querySelector('.st-w')?.value) || 11;
+        let l = parseFloat(r.querySelector('.st-l')?.value) || 8;
+        let h = parseFloat(r.querySelector('.st-h')?.value) || 10;
+        let tip = r.querySelector('.st-tip')?.value || 'kocke';
+        let debsRaw = r.querySelector('.st-debs')?.value || "0.2";
+
+        let debs = debsRaw.split(',')
+            .map(s => parseFloat(s.trim().replace(',', '.')))
+            .filter(n => !isNaN(n) && n >= 0)
+            .sort((a, b) => a - b);
+
+        if (debs.length === 0) debs = [0.2];
+        if (tip === 'kocke' || tip === 'oba') trebaOkvirKocke = true;
+
+        html += `<div class="sheet-master-block">
+            <div class="sheet-master-header">
+                <h2 style="margin:0; font-size:18px;">📦 ${name} (${f(w)} × ${f(l)} × ${f(h)} cm) — Debljine stranica: ${debs.map(d => f(d) + ' cm').join(' / ')}</h2>
+                <span>Režim: ${mode === 'baza_exact' ? 'Fiksna Baza' : 'Fiksan Čep'}</span>
+            </div>`;
+
+        if (multiMode === 'dupli_big_cep' && debs.length > 1) {
+            // Opcija 1: Jedna Baza, jedan Poklopac, a Čep i Okvir čepa imaju DUPLI BIG za sve unete debljine!
+            let minDeb = debs[0];
+            let mBase = izracunajMereZaStancRed(mode, w, l, h, minDeb, tip);
+            // Ako je bio režim cep_exact, fiksiramo spoljnu Bazu prema najvećoj debljini da sve stane u istu Bazu:
+            if (mode === 'cep_exact') {
+                let maxDeb = debs[debs.length - 1];
+                let mMax = izracunajMereZaStancRed('cep_exact', w, l, h, maxDeb, tip);
+                mBase = izracunajMereZaStancRed('baza_exact', mMax.boxW, mMax.boxL, mMax.boxH, minDeb, tip);
+            }
+
+            let extraDeltas = debs.slice(1).map(d => Number((d - minDeb).toFixed(3))).filter(d => d > 0.005);
+            let extraOkvirVariants = debs.slice(1).map(d => {
+                let mVar = izracunajMereZaStancRed('baza_exact', mBase.boxW, mBase.boxL, mBase.boxH, d, tip);
+                return { deb: d, w: mVar.cepW - 0.5, l: mVar.cepL - 0.5 };
+            });
+
+            // 1. Baza
+            let kBaza = `st6_b${bIdx}_baza`;
+            html += dodajStranuAkoNijeDuplikat(
+                `baza_${mBase.boxW.toFixed(2)}_${mBase.boxL.toFixed(2)}_${mBase.boxH.toFixed(2)}`,
+                (pg, k) => generisiSVG(k, `Strana ${pg}: [${name}] Spoljna Baza (${f(mBase.boxW)}×${f(mBase.boxL)}×${f(mBase.boxH)} cm)`, mBase.boxW, mBase.boxL, mBase.boxH, 'baza', `Strana_${pg}_${name}_Baza`),
+                kBaza
+            );
+
+            // 2. Poklopac
+            let kPok = `st6_b${bIdx}_pok`;
+            html += dodajStranuAkoNijeDuplikat(
+                `pok_${mBase.pokW.toFixed(2)}_${mBase.pokL.toFixed(2)}_${mBase.pokH.toFixed(2)}`,
+                (pg, k) => generisiSVG(k, `Strana ${pg}: [${name}] Spoljni Poklopac (${f(mBase.pokW)}×${f(mBase.pokL)}×${f(mBase.pokH)} cm)`, mBase.pokW, mBase.pokL, mBase.pokH, 'poklopac', `Strana_${pg}_${name}_Poklopac`),
+                kPok
+            );
+
+            // 3. Čep sa DUPLIM BIGOM
+            let kCep = `st6_b${bIdx}_cep_dupli`;
+            let debStr = debs.map(d => f(d)).join(' / ');
+            html += dodajStranuAkoNijeDuplikat(
+                `cep_dupli_${mBase.cepW.toFixed(2)}_${mBase.cepL.toFixed(2)}_${mBase.cepH.toFixed(2)}_${extraDeltas.join('_')}`,
+                (pg, k) => generisiSVG(k, `Strana ${pg}: [${name}] Unutrašnji Čep SA DUPLIM BIGOM (za debljine ${debStr} cm)`, mBase.cepW, mBase.cepL, mBase.cepH, 'cep', `Strana_${pg}_${name}_Cep_DupliBig`, extraDeltas),
+                kCep
+            );
+
+            // 4. Okvir Čepa sa DUPLIM BIGOM
+            let kOkvC = `st6_b${bIdx}_okv_cep_dupli`;
+            html += dodajStranuAkoNijeDuplikat(
+                `okv_cep_dupli_${(mBase.cepW-0.5).toFixed(2)}_${(mBase.cepL-0.5).toFixed(2)}_${mBase.okvirCepaZid}_${extraDeltas.join('_')}`,
+                (pg, k) => generisiTraku(k, `Strana ${pg}: [${name}] Okvir Čepa SA DUPLIM BIGOM (za debljine ${debStr} cm)`, mBase.cepW - 0.5, mBase.cepL - 0.5, 1.0, mBase.okvirCepaZid, `Strana_${pg}_${name}_OkvirCepa_DupliBig`, extraOkvirVariants),
+                kOkvC
+            );
+
+            // 5. Dekorativni bočni kvadrati (ako je izabrano "sve")
+            if (dodatniMode === 'sve') {
+                let p = 0.93;
+                let predW = mBase.boxW * p, predH = mBase.boxH * p;
+                let bocW = mBase.boxL * p, bocH = mBase.boxH * p;
+                let kDek1 = `st6_b${bIdx}_dek_pred`;
+                html += dodajStranuAkoNijeDuplikat(
+                    `rect_${predW.toFixed(2)}_${predH.toFixed(2)}`,
+                    (pg, k) => {
+                        window.sabloniCache[k] = { shapeType: 'rect', params: { w: predW, h: predH }, cleanFileName: `Strana_${pg}_${name}_Kvadrat_Prednji`, title: `Strana ${pg}: [${name}] Bočni kvadrat Prednji/Zadnji (${f(predW)}×${f(predH)} cm)` };
+                        return `<div class="component"><div class="component-header"><h2>Strana ${pg}: [${name}] Bočni kvadrat Prednji/Zadnji (${f(predW)}×${f(predH)} cm)</h2><button class="export-btn pdf" onclick="eksportujSablonPDF('${k}')">📄 1:1 PDF (${f(predW*10)}×${f(predH*10)} mm)</button></div></div>`;
+                    },
+                    kDek1
+                );
+                if (Math.abs(bocW - predW) > 0.05) {
+                    let kDek2 = `st6_b${bIdx}_dek_boc`;
+                    html += dodajStranuAkoNijeDuplikat(
+                        `rect_${bocW.toFixed(2)}_${bocH.toFixed(2)}`,
+                        (pg, k) => {
+                            window.sabloniCache[k] = { shapeType: 'rect', params: { w: bocW, h: bocH }, cleanFileName: `Strana_${pg}_${name}_Kvadrat_Bocni`, title: `Strana ${pg}: [${name}] Bočni kvadrat Levi/Desni (${f(bocW)}×${f(bocH)} cm)` };
+                            return `<div class="component"><div class="component-header"><h2>Strana ${pg}: [${name}] Bočni kvadrat Levi/Desni (${f(bocW)}×${f(bocH)} cm)</h2><button class="export-btn pdf" onclick="eksportujSablonPDF('${k}')">📄 1:1 PDF (${f(bocW*10)}×${f(bocH*10)} mm)</button></div></div>`;
+                        },
+                        kDek2
+                    );
+                }
+            }
+        } else {
+            // Opcija 2 ili 3: Za svaku debljinu stranice generišemo tačne šablone (uz deduplikaciju istih šablona u Opciji 2)
+            debs.forEach((deb, dIdx) => {
+                let m = izracunajMereZaStancRed(mode, w, l, h, deb, tip);
+                let debLbl = `Debljina ${f(deb)}cm`;
+
+                let kBaza = `st6_b${bIdx}_d${dIdx}_baza`;
+                html += dodajStranuAkoNijeDuplikat(
+                    `baza_${m.boxW.toFixed(2)}_${m.boxL.toFixed(2)}_${m.boxH.toFixed(2)}`,
+                    (pg, k) => generisiSVG(k, `Strana ${pg}: [${name} - ${debLbl}] Spoljna Baza (${f(m.boxW)}×${f(m.boxL)}×${f(m.boxH)} cm)`, m.boxW, m.boxL, m.boxH, 'baza', `Strana_${pg}_${name}_${debLbl}_Baza`),
+                    kBaza
+                );
+
+                let kPok = `st6_b${bIdx}_d${dIdx}_pok`;
+                html += dodajStranuAkoNijeDuplikat(
+                    `pok_${m.pokW.toFixed(2)}_${m.pokL.toFixed(2)}_${m.pokH.toFixed(2)}`,
+                    (pg, k) => generisiSVG(k, `Strana ${pg}: [${name} - ${debLbl}] Spoljni Poklopac (${f(m.pokW)}×${f(m.pokL)}×${f(m.pokH)} cm)`, m.pokW, m.pokL, m.pokH, 'poklopac', `Strana_${pg}_${name}_${debLbl}_Poklopac`),
+                    kPok
+                );
+
+                let kCep = `st6_b${bIdx}_d${dIdx}_cep`;
+                html += dodajStranuAkoNijeDuplikat(
+                    `cep_${m.cepW.toFixed(2)}_${m.cepL.toFixed(2)}_${m.cepH.toFixed(2)}`,
+                    (pg, k) => generisiSVG(k, `Strana ${pg}: [${name} - ${debLbl}] Unutrašnji Čep (${f(m.cepW)}×${f(m.cepL)}×${f(m.cepH)} cm)`, m.cepW, m.cepL, m.cepH, 'cep', `Strana_${pg}_${name}_${debLbl}_Cep`),
+                    kCep
+                );
+
+                let kOkvC = `st6_b${bIdx}_d${dIdx}_okv_cep`;
+                html += dodajStranuAkoNijeDuplikat(
+                    `okv_cep_${(m.cepW-0.5).toFixed(2)}_${(m.cepL-0.5).toFixed(2)}_${m.okvirCepaZid}`,
+                    (pg, k) => generisiTraku(k, `Strana ${pg}: [${name} - ${debLbl}] Okvir Čepa (${f(m.cepW-0.5)}×${f(m.cepL-0.5)} cm, zid ${f(m.okvirCepaZid)} cm)`, m.cepW - 0.5, m.cepL - 0.5, 1.0, m.okvirCepaZid, `Strana_${pg}_${name}_${debLbl}_OkvirCepa`),
+                    kOkvC
+                );
+
+                if (dodatniMode === 'sve') {
+                    let p = 0.93;
+                    let predW = m.boxW * p, predH = m.boxH * p;
+                    let bocW = m.boxL * p, bocH = m.boxH * p;
+                    let kDek1 = `st6_b${bIdx}_d${dIdx}_dek_pred`;
+                    html += dodajStranuAkoNijeDuplikat(
+                        `rect_${predW.toFixed(2)}_${predH.toFixed(2)}`,
+                        (pg, k) => {
+                            window.sabloniCache[k] = { shapeType: 'rect', params: { w: predW, h: predH }, cleanFileName: `Strana_${pg}_${name}_Kvadrat_Prednji`, title: `Strana ${pg}: [${name} - ${debLbl}] Bočni kvadrat Prednji/Zadnji (${f(predW)}×${f(predH)} cm)` };
+                            return `<div class="component"><div class="component-header"><h2>Strana ${pg}: [${name} - ${debLbl}] Bočni kvadrat Prednji/Zadnji (${f(predW)}×${f(predH)} cm)</h2><button class="export-btn pdf" onclick="eksportujSablonPDF('${k}')">📄 1:1 PDF (${f(predW*10)}×${f(predH*10)} mm)</button></div></div>`;
+                        },
+                        kDek1
+                    );
+                    if (Math.abs(bocW - predW) > 0.05) {
+                        let kDek2 = `st6_b${bIdx}_d${dIdx}_dek_boc`;
+                        html += dodajStranuAkoNijeDuplikat(
+                            `rect_${bocW.toFixed(2)}_${bocH.toFixed(2)}`,
+                            (pg, k) => {
+                                window.sabloniCache[k] = { shapeType: 'rect', params: { w: bocW, h: bocH }, cleanFileName: `Strana_${pg}_${name}_Kvadrat_Bocni`, title: `Strana ${pg}: [${name} - ${debLbl}] Bočni kvadrat Levi/Desni (${f(bocW)}×${f(bocH)} cm)` };
+                                return `<div class="component"><div class="component-header"><h2>Strana ${pg}: [${name} - ${debLbl}] Bočni kvadrat Levi/Desni (${f(bocW)}×${f(bocH)} cm)</h2><button class="export-btn pdf" onclick="eksportujSablonPDF('${k}')">📄 1:1 PDF (${f(bocW*10)}×${f(bocH*10)} mm)</button></div></div>`;
+                            },
+                            kDek2
+                        );
+                    }
+                }
+            });
+        }
+
+        html += `</div>`;
+    });
+
+    // Zajednički elementi (Okvir za kocke i Pop-Up Kocka 25x15 sa vodiljom 2mm)
+    if (trebaOkvirKocke || dodatniMode !== 'samo_kutija') {
+        html += `<div class="sheet-master-block" style="border-color:#8e44ad;">
+            <div class="sheet-master-header" style="background:#8e44ad;">
+                <h2 style="margin:0; font-size:18px;">🎲 ZAJEDNIČKI ŠTANC ŠABLONI ZA MEHANIZAM (Okvir za kocke & Pop-Up Kocka 25×15 cm)</h2>
+                <span>Univerzalni delovi za sve kutije</span>
+            </div>`;
+
+        if (trebaOkvirKocke) {
+            let kOkvK = `st6_zajednicki_okvir_kocke`;
+            html += dodajStranuAkoNijeDuplikat(
+                `okvir_kocke_10.5_5.5_3.0`,
+                (pg, k) => generisiTraku(k, `Strana ${pg}: [Zajednički štanc] Okvir za kocke u poklopcu (10,5×5,5 cm, visina 3 cm + 1 cm klapna)`, 10.5, 5.5, 1.0, 3.0, `Strana_${pg}_Zajednicki_Okvir_Za_Kocke`),
+                kOkvK
+            );
+        }
+
+        if (dodatniMode !== 'samo_kutija') {
+            let kPop = `st6_zajednicka_popup_kocka`;
+            html += dodajStranuAkoNijeDuplikat(
+                `popup_kocka_25x15_2mm`,
+                (pg, k) => generisiPopUpSablonSVG(k, `Strana ${pg}: [Zajednički štanc] Pop-Up Kocka (25×15 cm / 250×150 mm — Rupa Ø3,6mm + Vodilja 2mm)`),
+                kPop
+            );
+        }
+
+        html += `</div>`;
+    }
+
+    html = `<div class="summary-banner">
+        <h2 style="margin:0;">📄 Ukupno pripremljeno 1:1 štanc strana za PDF: ${window.multiStancPages.length} strana</h2>
+        <div style="margin-top:6px; font-size:13.5px; color:#196f3d;">
+            Klikni na ljubičasto dugme iznad da preuzmeš <strong>jedan PDF fajl sa svih ${window.multiStancPages.length} štancova</strong> (svaki štanc je na svojoj PDF strani u tačnim milimetrima 1:1).
+        </div>
+    </div>` + html;
+
+    document.getElementById('results-stanc-pdf').innerHTML = html;
+}
+
+function eksportujMultiStancPDF() {
+    if (!window.multiStancPages || window.multiStancPages.length === 0) {
+        generisiStancVišeKutija();
+    }
+    if (window.multiStancPages.length === 0) return;
+
+    const { jsPDF } = window.jspdf;
+    let doc = null;
+    let marginMm = 10;
+
+    window.multiStancPages.forEach((key, idx) => {
+        let item = window.sabloniCache[key];
+        if (!item) return;
+        let geom = dobijGeometrijuSablona(item.shapeType, item.params);
+        let pageW = geom.bbW * 10 + marginMm * 2;
+        let pageH = geom.bbH * 10 + marginMm * 2;
+        let orient = pageW >= pageH ? 'l' : 'p';
+
+        if (idx === 0) {
+            doc = new jsPDF({ orientation: orient, unit: 'mm', format: [pageW, pageH] });
+        } else {
+            doc.addPage([pageW, pageH], orient);
+        }
+        nacrtajSablonNaStraniciPDF(doc, item.shapeType, item.params, marginMm, item.title || item.cleanFileName);
+    });
+
+    if (doc) {
+        doc.save(`BumBox_Svi_Stancovi_1na1_Po_Stranama_${window.multiStancPages.length}str.pdf`);
+    }
 }
 
 window.onload = function() {
