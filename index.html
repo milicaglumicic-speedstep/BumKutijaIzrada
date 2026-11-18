@@ -570,7 +570,42 @@ function dobijMereZaTip(tipOverride) {
 }
 
 // =========================================================================
-// GENERATOR VEKTORSKE GEOMETRIJE (AŽURIRAN ČEP + POP-UP KOCKA SA ZAREZIMA)
+// POMOĆNA FUNKCIJA ZA KUKICU (RUPICA SA VODILJOM) NA CRVENIM KLAPNAMA KOCKE
+// =========================================================================
+function napraviKukicuSaVodiljom(xSlit, yBottom, cy, r, smerKaBigu) {
+    // Vertikalna vodilja ide sa donje kose V-ivice (xSlit, yBottom) pravo nagore do (xSlit, cy),
+    // a zatim prelazi u kružnu rupicu (centar cx = xSlit + smerKaBigu * r, cy)
+    // koja je povijena ka liniji biga i pravi "ofinger/kukicu" ispod rupice.
+    let cx = xSlit + smerKaBigu * r;
+    let pts = [
+        [xSlit, yBottom],
+        [xSlit, cy]
+    ];
+    let koraci = 18;
+    if (smerKaBigu > 0) {
+        // Krug ide od ugla PI (levo na xSlit), preko vrha (PI/2), desno ka bigu (0), dole ispod (-PI/2) nazad do PI
+        for (let i = 1; i <= koraci; i++) {
+            let ugao = Math.PI - (i / koraci) * 2 * Math.PI;
+            pts.push([
+                Number((cx + r * Math.cos(ugao)).toFixed(3)),
+                Number((cy - r * Math.sin(ugao)).toFixed(3))
+            ]);
+        }
+    } else {
+        // Krug ide od ugla 0 (desno na xSlit), preko vrha (PI/2), levo ka bigu (PI), dole ispod (3*PI/2) nazad do 2*PI
+        for (let i = 1; i <= koraci; i++) {
+            let ugao = (i / koraci) * 2 * Math.PI;
+            pts.push([
+                Number((cx + r * Math.cos(ugao)).toFixed(3)),
+                Number((cy - r * Math.sin(ugao)).toFixed(3))
+            ]);
+        }
+    }
+    return pts;
+}
+
+// =========================================================================
+// GENERATOR VEKTORSKE GEOMETRIJE (ZA EKRAN, NESTING I 1:1 ŠTAMPARSKI PDF)
 // =========================================================================
 function dobijGeometrijuSablona(shapeType, p) {
     let cuts = [];
@@ -594,22 +629,16 @@ function dobijGeometrijuSablona(shapeType, p) {
         folds.push([[0,h],[bbW,h]], [[0,h+l],[bbW,h+l]], [[h,h],[h,h+l]], [[h+w,h],[h+w,h+l]]);
     }
     else if (shapeType === 'cep') {
-        // ČIST SPOLJNI KVADRAT/PRAVOUGAONIK SA PUNIM L-ZAMAK PREKLOPIMA KOJI DUPLIRAJU SVE 4 STRANE
+        // REVIDIRAN ČIST KVADRATNI/PRAVOUGAONI ŠABLON ČEPA:
+        // Spoljni oblik je pun pravougaonik/kvadrat (2h + w) x (2h + l) bez odsecanja uglova.
+        // U sva 4 ugla su puni jezičci dimenzija h x h koji se preklapaju preko bočnih stranica (l) i dupliraju ih!
         let { w, l, h } = p;
         bbW = 2*h + w; bbH = 2*h + l;
-        let hm = h / 2.0; 
-
         cuts.push([[0,0], [bbW,0], [bbW,bbH], [0,bbH], [0,0]]);
-        cuts.push([[0, hm], [h, hm], [h, h]]);               
-        cuts.push([[bbW, hm], [h+w, hm], [h+w, h]]);         
-        cuts.push([[0, h+l+hm], [h, h+l+hm], [h, h+l]]);     
-        cuts.push([[bbW, h+l+hm], [h+w, h+l+hm], [h+w, h+l]]); 
-
-        folds.push([[h, h], [h+w, h]], [[h, h+l], [h+w, h+l]]);
-        folds.push([[h, 0], [h, hm]], [[h, h], [h, h+l]], [[h, h+l+hm], [h, bbH]]);
-        folds.push([[h+w, 0], [h+w, hm]], [[h+w, h], [h+w, h+l]], [[h+w, h+l+hm], [h+w, bbH]]);
-        folds.push([[0, h], [h, h]], [[h+w, h], [bbW, h]]);
-        folds.push([[0, h+l], [h, h+l]], [[h+w, h+l], [bbW, h+l]]);
+        // 4 ravna horizontalna reza u uglovima (na y = h i y = h + l) koji oslobađaju 4 puna jezička h x h:
+        cuts.push([[0,h],[h,h]], [[h+w,h],[bbW,h]], [[0,h+l],[h,h+l]], [[h+w,h+l],[bbW,h+l]]);
+        // Linije bigovanja: 2 vertikalne pune linije (od 0 do bbH) i 2 horizontalne centralne linije (od h do h+w):
+        folds.push([[h,0],[h,bbH]], [[h+w,0],[h+w,bbH]], [[h,h],[h+w,h]], [[h,h+l],[h+w,h+l]]);
     }
     else if (shapeType === 'traka') {
         let { w, l, hKlapna, hZid } = p;
@@ -624,7 +653,7 @@ function dobijGeometrijuSablona(shapeType, p) {
         bbW = w; bbH = h;
         cuts.push([[0,0], [w,0], [w,h], [0,h], [0,0]]);
     }
-            else if (shapeType === 'popup') {
+    else if (shapeType === 'popup') {
         bbW = 25; bbH = 15;
         // Glavna spoljna kontura Pop-Up kocke (25x15 cm)
         cuts.push([
@@ -632,16 +661,19 @@ function dobijGeometrijuSablona(shapeType, p) {
             [18,6], [19,5], [24,5], [25,6], [25,9], [24,10], [19,10], [18,9], [17,10], [18,11], [18,14],
             [17,15], [12,10], [7,15], [6,14], [6,11], [7,10], [6,9], [5,10], [0,10], [0,5]
         ]);
-        
-        // PROREZI SA VODILJOM TAČNO NA PREVOJIMA (BIGOVI U CRVENOJ OBLASTI)
-        // 1. Gornji levi prevoj
-        cuts.push([[6.0, 5.0], [5.6, 5.4], [5.4, 5.4], [5.4, 5.8], [6.0, 5.8]]);
-        // 2. Donji levi prevoj
-        cuts.push([[6.0, 10.0], [5.6, 9.6], [5.4, 9.6], [5.4, 9.2], [6.0, 9.2]]);
-        // 3. Gornji desni prevoj
-        cuts.push([[19.0, 5.0], [19.4, 5.4], [19.6, 5.4], [19.6, 5.8], [19.0, 5.8]]);
-        // 4. Donji desni prevoj
-        cuts.push([[19.0, 10.0], [19.4, 9.6], [19.6, 9.6], [19.6, 9.2], [19.0, 9.2]]);
+
+        // KUKICE (RUPICE SA VODILJOM) U OBE CRVENE OBLASTI KOJE SE POKLOPE KADA SE SAVIJE BIG:
+        // 1. Leva crvena oblast (x = 5..7, big je na x = 6):
+        //    Leva i desna vodilja kreću sa donje V-ivice (y = 9.60) na x = 5.40 i x = 6.60,
+        //    idu nagore do y = 7.50 i prave kružne rupice (r = 0.18 cm) povijene ka bigu x = 6.
+        cuts.push(napraviKukicuSaVodiljom(5.40, 9.60, 7.50, 0.18, +1));
+        cuts.push(napraviKukicuSaVodiljom(6.60, 9.60, 7.50, 0.18, -1));
+
+        // 2. Desna crvena oblast (x = 17..19, big je na x = 18):
+        //    Leva i desna vodilja kreću sa donje V-ivice (y = 9.60) na x = 17.40 i x = 18.60,
+        //    idu nagore do y = 7.50 i prave kružne rupice (r = 0.18 cm) povijene ka bigu x = 18.
+        cuts.push(napraviKukicuSaVodiljom(17.40, 9.60, 7.50, 0.18, +1));
+        cuts.push(napraviKukicuSaVodiljom(18.60, 9.60, 7.50, 0.18, -1));
 
         folds.push(
             [[5,5],[5,10]], [[6,6],[6,9]], [[7,0],[7,15]], [[12,5],[12,10]], [[17,0],[17,15]],
@@ -649,7 +681,6 @@ function dobijGeometrijuSablona(shapeType, p) {
             [[7,5],[9.5,2.5]], [[17,5],[14.5,2.5]], [[7,10],[9.5,12.5]], [[17,10],[14.5,12.5]]
         );
     }
-
 
     return { cuts, folds, bbW, bbH };
 }
@@ -795,7 +826,6 @@ function eksportujTabakPDF(binKey) {
 function generisiSVG(key, naslov, w, l, h, type, cleanFileName) {
     let bbW = 2*h + w;
     let bbL = 2*h + l;
-    let hm = h / 2.0;
 
     window.sabloniCache[key] = { shapeType: type, params: { w, l, h }, cleanFileName };
 
@@ -805,7 +835,7 @@ function generisiSVG(key, naslov, w, l, h, type, cleanFileName) {
         .fold { stroke: blue; stroke-width: 0.15; stroke-dasharray: 1, 1.5; fill: none; }
         .dim { font-size: ${(bbW/30).toFixed(1)}px; font-family: monospace; fill: #333; font-weight: bold; }
         .center-text { font-size: ${(bbW/20).toFixed(1)}px; font-weight: bold; fill: #222; }
-        .bg-center { fill: #ebf5fb; } .bg-wall { fill: #fffdf0; } .bg-tab { fill: #f5b7b1; } .bg-tab2 { fill: #fadbd8; }
+        .bg-center { fill: #ebf5fb; } .bg-wall { fill: #fffdf0; } .bg-tab { fill: #f5b7b1; }
     </style>`;
 
     svgStr += `<rect x="${h}" y="${h}" width="${w}" height="${l}" class="bg-center" />`;
@@ -814,20 +844,12 @@ function generisiSVG(key, naslov, w, l, h, type, cleanFileName) {
                <rect x="${h}" y="0" width="${w}" height="${h}" class="bg-wall" />
                <rect x="${h}" y="${h+l}" width="${w}" height="${h}" class="bg-wall" />`;
 
-    if (type === 'poklopac') {
+    if (type === 'poklopac' || type === 'cep') {
+        // Puni ugaoni jezičci h x h u sva 4 ugla (čist spoljni kvadrat/pravougaonik)
         svgStr += `<rect x="0" y="0" width="${h}" height="${h}" class="bg-tab" />
                    <rect x="${h+w}" y="0" width="${h}" height="${h}" class="bg-tab" />
                    <rect x="0" y="${h+l}" width="${h}" height="${h}" class="bg-tab" />
                    <rect x="${h+w}" y="${h+l}" width="${h}" height="${h}" class="bg-tab" />`;
-    } else if (type === 'cep') {
-        svgStr += `<rect x="0" y="0" width="${h}" height="${hm}" class="bg-tab" />
-                   <rect x="${h+w}" y="0" width="${h}" height="${hm}" class="bg-tab" />
-                   <rect x="0" y="${h+l+hm}" width="${h}" height="${hm}" class="bg-tab" />
-                   <rect x="${h+w}" y="${h+l+hm}" width="${h}" height="${hm}" class="bg-tab" />`;
-        svgStr += `<rect x="0" y="${hm}" width="${h}" height="${hm}" class="bg-tab2" />
-                   <rect x="${h+w}" y="${hm}" width="${h}" height="${hm}" class="bg-tab2" />
-                   <rect x="0" y="${h+l}" width="${h}" height="${hm}" class="bg-tab2" />
-                   <rect x="${h+w}" y="${h+l}" width="${h}" height="${hm}" class="bg-tab2" />`;
     }
 
     svgStr += `<text x="${h + w/2}" y="${h + l/2}" text-anchor="middle" dominant-baseline="middle" class="center-text">${f(w)} x ${f(l)}</text>`;
@@ -843,10 +865,6 @@ function generisiSVG(key, naslov, w, l, h, type, cleanFileName) {
     geom.folds.forEach(seg => {
         svgStr += `<line x1="${seg[0][0]}" y1="${seg[0][1]}" x2="${seg[1][0]}" y2="${seg[1][1]}" class="fold" />`;
     });
-
-    if (type === 'cep') {
-        ptsY = Array.from(new Set([0, hm, h, h+l, h+l+hm, bbL])).sort((a,b)=>a-b);
-    }
 
     ptsX.forEach(p => {
         svgStr += `<text x="${p}" y="-1.0" text-anchor="middle" class="dim">${f(p)}</text>`;
@@ -987,7 +1005,7 @@ function generisiSablone() {
         html += generisiTraku("okvir_kocke", "3. Okvir za kocke (ide u poklopac, visina 3cm + 1cm klapna)", 10.5, 5.5, 1.0, 3.0, '3_Okvir_Za_Kocke');
     }
     
-    html += generisiSVG("cep", "4. Unutrašnji Čep (Dimenzije za izradu)", m.cepW, m.cepL, m.cepH, 'cep', '4_Unutrasnji_Cep');
+    html += generisiSVG("cep", "4. Unutrašnji Čep (Pun kvadratni šablon — jezičci dupliraju stranice)", m.cepW, m.cepL, m.cepH, 'cep', '4_Unutrasnji_Cep');
     html += generisiTraku("okvir_cepa", `5. Okvir Čepa (lepi se na dno kutije, visina ${f(m.okvirCepaZid)}cm + 1cm klapna)`, m.cepW - 0.5, m.cepL - 0.5, 1.0, m.okvirCepaZid, '5_Okvir_Cepa');
     html += generisiDekoraciju(m.boxW, m.boxL, m.boxH);
 
@@ -1005,7 +1023,6 @@ function izracunajTacnuPovrsinuCm2(shapeType, params) {
         let { w, l, h } = params;
         return (geom.bbW * geom.bbH) - (4 * h * h);
     } else if (shapeType === 'cep') {
-        // Za čep sa L-preklopima, površina je puna gabaritna površina (jer su jezičci pune dužine)
         return geom.bbW * geom.bbH;
     } else if (shapeType === 'popup') {
         return (25 * 15) - (4 * 6 * 5);
@@ -1037,7 +1054,7 @@ function kreirajMaskuOblika(shapeType, params, rotated) {
         }
     } 
     else if (shapeType === 'cep') {
-        // Maska ostaje pun pravougaonik jer su jezičci pune dužine h
+        // Maska čepa je pun pravougaonik/kvadrat jer su ugaoni jezičci pune dužine h x h
     }
     else if (shapeType === 'popup') {
         for (let r = 0; r < gh; r++) {
@@ -1430,17 +1447,18 @@ function generisiMiksMaterijal() {
     document.getElementById('results-miks').innerHTML = html;
 }
 
-// --- TAB 4: POP-UP KOCKE (25 x 15 cm SA ZAREZIMA) ---
+// --- TAB 4: POP-UP KOCKE (25 x 15 cm SA KUKICAMA / RUPICAMA I VODILJAMA U CRVENOJ OBLASTI) ---
 function generisiPopUpSablonSVG() {
     window.sabloniCache['popup_kocka'] = { shapeType: 'popup', params: {}, cleanFileName: 'PopUp_Kocka_25x15cm' };
 
     let ptsX = [0, 5, 6, 7, 12, 17, 18, 19, 24, 25];
     let ptsY = [0, 5, 10, 15];
+    let geom = dobijGeometrijuSablona('popup', {});
 
     let svg = `<svg viewBox="-3 -3 31 20" xmlns="http://www.w3.org/2000/svg">
         <style>
             .cut { stroke: red; stroke-width: 0.15; fill: none; }
-            .notch { stroke: #d32f2f; stroke-width: 0.22; fill: none; stroke-linecap: round; }
+            .hook { stroke: #d32f2f; stroke-width: 0.14; fill: rgba(231, 76, 60, 0.25); stroke-linecap: round; stroke-linejoin: round; }
             .fold { stroke: blue; stroke-width: 0.15; stroke-dasharray: 0.7, 0.9; fill: none; }
             .dim { font-size: 0.85px; font-family: monospace; fill: #333; font-weight: bold; }
             .bg-center { fill: #ebf5fb; }
@@ -1466,30 +1484,12 @@ function generisiPopUpSablonSVG() {
         <polygon points="17,10 18,11 18,14 17,15" class="bg-tab" />
         <polygon points="24,5 25,6 25,9 24,10" class="bg-tab" />
 
-        <line x1="5" y1="5" x2="5" y2="10" class="fold" />
-        <line x1="6" y1="6" x2="6" y2="9" class="fold" />
-        <line x1="7" y1="0" x2="7" y2="15" class="fold" />
-        <line x1="12" y1="5" x2="12" y2="10" class="fold" />
-        <line x1="17" y1="0" x2="17" y2="15" class="fold" />
-        <line x1="18" y1="6" x2="18" y2="9" class="fold" />
-        <line x1="19" y1="5" x2="19" y2="10" class="fold" />
-        <line x1="24" y1="5" x2="24" y2="10" class="fold" />
-        <line x1="7" y1="5" x2="17" y2="5" class="fold" />
-        <line x1="7" y1="10" x2="17" y2="10" class="fold" />
-        <line x1="7" y1="5" x2="9.5" y2="2.5" class="fold" />
-        <line x1="17" y1="5" x2="14.5" y2="2.5" class="fold" />
-        <line x1="7" y1="10" x2="9.5" y2="12.5" class="fold" />
-        <line x1="17" y1="10" x2="14.5" y2="12.5" class="fold" />
+        ${geom.folds.map(seg => `<line x1="${seg[0][0]}" y1="${seg[0][1]}" x2="${seg[1][0]}" y2="${seg[1][1]}" class="fold" />`).join('\n        ')}
 
-        <path d="M 0,5 L 5,5 L 6,6 L 7,5 L 6,4 L 6,1 L 7,0 L 12,5 L 17,0 L 18,1 L 18,4 L 17,5 L 18,6 L 19,5 L 24,5 L 25,6 L 25,9 L 24,10 L 19,10 L 18,9 L 17,10 L 18,11 L 18,14 L 17,15 L 12,10 L 7,15 L 6,14 L 6,11 L 7,10 L 6,9 L 5,10 L 0,10 Z" class="cut" />
-        
-        <!-- Zarezi za gumicu -->
-        <path d="M 6.0,6.0 L 5.75,6.25" class="notch" />
-        <path d="M 6.0,9.0 L 5.75,8.75" class="notch" />
-        <path d="M 18.0,6.0 L 18.25,6.25" class="notch" />
-        <path d="M 18.0,9.0 L 18.25,8.75" class="notch" />
-        <path d="M 12.0,5.0 L 12.0,5.3" class="notch" />
-        <path d="M 12.0,10.0 L 12.0,9.7" class="notch" />
+        ${geom.cuts.map((poly, idx) => {
+            let d = poly.map((pt, i) => `${i===0?'M':'L'} ${pt[0]},${pt[1]}`).join(' ');
+            return `<path d="${d}" class="${idx === 0 ? 'cut' : 'hook'}" />`;
+        }).join('\n        ')}
 
         ${ptsX.map(p => `<text x="${p}" y="-0.8" text-anchor="middle" class="dim">${p}</text>`).join('')}
         ${ptsY.map(p => `<text x="-0.8" y="${p + 0.3}" text-anchor="end" class="dim">${p}</text>`).join('')}
@@ -1497,13 +1497,13 @@ function generisiPopUpSablonSVG() {
 
     return `<div class="component">
         <div class="component-header">
-            <h2>Šablon: Pop-Up Kocka (25 x 15 cm / 250 x 150 mm) sa zarezima za gumicu</h2>
+            <h2>Šablon: Pop-Up Kocka (25 x 15 cm / 250 x 150 mm) sa kukicama (rupice + vodilje) za gumicu</h2>
             <div class="btn-toolbar" style="margin:0;">
                 <button class="export-btn pdf" onclick="eksportujSablonPDF('popup_kocka')">📄 1:1 PDF za štampariju (250x150 mm)</button>
                 <button class="export-btn" onclick="eksportujSablonSVG('popup_kocka')">📐 1:1 SVG Vektor</button>
             </div>
         </div>
-        <div class="text-measures"><strong>Gabarit jedne kocke:</strong> 25 x 15 cm sa ucrtanim zarezima za brzu montažu gumica na štancu.</div>
+        <div class="text-measures"><strong>Gabarit jedne kocke:</strong> 25 x 15 cm\n<strong>Mehanizam za gumicu:</strong> U obe crvene oblasti (oko bigova na 6 cm i 18 cm) nalaze se simetrične kružne rupice sa vertikalnim vodiljama sa donje V-ivice koje se 100% poklope kada se big savije.</div>
         <div class="svg-container">${svg}</div>
     </div>`;
 }
@@ -1786,6 +1786,12 @@ function generisiIzmesaneKombinacije(mStd, mVel, sheetW, sheetH, ubaciBonusUCrte
             items: [...gVel.baza, ...gStd.cep, ...gStd.okviri]
         },
         {
+            naziv: 'Baza (VELIKA) + Poklopac (STANDARDNA) + Okviri (Vel)',
+            idealLabel: '⭐ Baza Velike + Poklopac Standardne',
+            isIdeal: false,
+            items: [...gVel.baza, ...gStd.poklopac, ...gVel.okviri]
+        },
+        {
             naziv: 'Baza (STANDARDNA) + Čep komplet (VELIKA: Čep + 4 Kvadrata)',
             idealLabel: '⭐ IDEALNO: Baza Standardne + Čep i stranice Velike',
             isIdeal: true,
@@ -1796,6 +1802,12 @@ function generisiIzmesaneKombinacije(mStd, mVel, sheetW, sheetH, ubaciBonusUCrte
             idealLabel: '⭐ Baza Standardne + Čep Velike',
             isIdeal: true,
             items: [...gStd.baza, ...gVel.cep, ...gVel.okviri]
+        },
+        {
+            naziv: 'Baza (STANDARDNA) + Poklopac (VELIKA) + Okviri (Std)',
+            idealLabel: '⭐ Baza Standardne + Poklopac Velike',
+            isIdeal: false,
+            items: [...gStd.baza, ...gVel.poklopac, ...gStd.okviri]
         },
         {
             naziv: '2× Baza (STANDARDNA) — Dve baze Standardne kutije',
@@ -1810,10 +1822,28 @@ function generisiIzmesaneKombinacije(mStd, mVel, sheetW, sheetH, ubaciBonusUCrte
             items: [...gVel.cep, ...gVel.kvadrati, ...gStd.cep, ...gStd.kvadrati]
         },
         {
+            naziv: 'Čep (VELIKA) + Čep (STANDARDNA) + Okviri (Obe kutije)',
+            idealLabel: '⭐ Oba čepa + Okviri',
+            isIdeal: false,
+            items: [...gVel.cep, ...gStd.cep, ...gVel.okviri, ...gStd.okviri]
+        },
+        {
+            naziv: 'Poklopac (VELIKA) + Poklopac (STANDARDNA) + Čep (STANDARDNA)',
+            idealLabel: '',
+            isIdeal: false,
+            items: [...gVel.poklopac, ...gStd.poklopac, ...gStd.cep]
+        },
+        {
             naziv: 'Baza (VELIKA) + 2× Pop-Up Kocka (25×15 cm)',
             idealLabel: '⭐ Baza Velike + 2 Pop-Up kocke u uglovima',
             isIdeal: false,
             items: [...gVel.baza, popUp1, popUp2]
+        },
+        {
+            naziv: 'Baza (STANDARDNA) + Poklopac (STANDARDNA) + 2× Pop-Up Kocka (25×15 cm)',
+            idealLabel: '⭐ Spoljašnjost Standardne + 2 Pop-Up kocke',
+            isIdeal: false,
+            items: [...gStd.baza, ...gStd.poklopac, popUp1, popUp2]
         }
     ];
 
